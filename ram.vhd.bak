@@ -1,0 +1,76 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+-- =============================================================
+-- LAB 3: Pamiec RAM
+--
+-- Oparty na przykladzie z dokumentacji laboratorium (ram1).
+-- Rozszerzony do 16-bit slowa i adresu 10-bit.
+--
+-- Parametry:
+--   - 1024 slowa (adres 10-bit: 0..1023)
+--   - slowo 16-bitowe
+--   - synchroniczny zapis (zbocze rosnace clk)
+--   - asynchroniczny odczyt
+--
+-- Mapa pamieci (segmentacja 4 x 256 slow):
+--   Segment 0: adresy   0..255   (0x000..0x0FF)
+--   Segment 1: adresy 256..511   (0x100..0x1FF)
+--   Segment 2: adresy 512..767   (0x200..0x2FF)
+--   Segment 3: adresy 768..1023  (0x300..0x3FF)
+--
+-- Wejscia:
+--   clk     - zegar
+--   we      - write enable (1=zapis)
+--   address - adres (10-bit)
+--   data    - dane do zapisu (16-bit)
+--
+-- Wyjscia:
+--   q       - dane odczytane (16-bit)
+-- =============================================================
+
+entity ram is
+    port (
+        clk     : in  std_logic;
+        we      : in  std_logic;
+        address : in  std_logic_vector(9 downto 0);
+        data    : in  std_logic_vector(15 downto 0);
+        q       : out std_logic_vector(15 downto 0)
+    );
+end entity ram;
+
+architecture rtl of ram is
+
+    type mem_type is array(0 to 1023) of std_logic_vector(15 downto 0);
+
+    -- Inicjalizacja z przykladowymi wartosciami testowymi
+    signal ram_block : mem_type := (
+        0   => x"0001",
+        1   => x"0002",
+        2   => x"0003",
+        3   => x"ABCD",
+        4   => x"1234",
+        5   => x"FFFF",
+        256 => x"0010",
+        512 => x"0020",
+        768 => x"0030",
+        others => x"0000"
+    );
+
+begin
+
+    -- Synchroniczny zapis
+    process(clk)
+    begin
+        if (clk'event and clk = '1') then
+            if we = '1' then
+                ram_block(to_integer(unsigned(address))) <= data;
+            end if;
+        end if;
+    end process;
+
+    -- Asynchroniczny odczyt
+    q <= ram_block(to_integer(unsigned(address)));
+
+end architecture rtl;

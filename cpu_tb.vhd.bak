@@ -1,0 +1,185 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity top_tb is
+end entity;
+
+architecture sim of top_tb is
+
+    ----------------------------------------------------------------
+    -- DUT
+    ----------------------------------------------------------------
+
+    component top is
+        port (
+            SW   : in  std_logic_vector(9 downto 0);
+            KEY  : in  std_logic_vector(1 downto 0);
+            LEDR : out std_logic_vector(9 downto 0);
+            HEX0 : out std_logic_vector(6 downto 0);
+            HEX1 : out std_logic_vector(6 downto 0);
+            HEX2 : out std_logic_vector(6 downto 0);
+            HEX3 : out std_logic_vector(6 downto 0);
+            HEX4 : out std_logic_vector(6 downto 0);
+            HEX5 : out std_logic_vector(6 downto 0)
+        );
+    end component;
+
+    ----------------------------------------------------------------
+    -- SIGNALS
+    ----------------------------------------------------------------
+
+    signal SW   : std_logic_vector(9 downto 0) := (others => '0');
+    signal KEY  : std_logic_vector(1 downto 0) := (others => '1');
+
+    signal LEDR : std_logic_vector(9 downto 0);
+
+    signal HEX0 : std_logic_vector(6 downto 0);
+    signal HEX1 : std_logic_vector(6 downto 0);
+    signal HEX2 : std_logic_vector(6 downto 0);
+    signal HEX3 : std_logic_vector(6 downto 0);
+    signal HEX4 : std_logic_vector(6 downto 0);
+    signal HEX5 : std_logic_vector(6 downto 0);
+
+    constant CLK_PERIOD : time := 20 ns;
+
+begin
+
+    ----------------------------------------------------------------
+    -- DUT INSTANCE
+    ----------------------------------------------------------------
+
+    DUT : top
+        port map (
+            SW   => SW,
+            KEY  => KEY,
+            LEDR => LEDR,
+            HEX0 => HEX0,
+            HEX1 => HEX1,
+            HEX2 => HEX2,
+            HEX3 => HEX3,
+            HEX4 => HEX4,
+            HEX5 => HEX5
+        );
+
+    ----------------------------------------------------------------
+    -- CLOCK GENERATION
+    -- KEY(0) jest aktywny niski
+    ----------------------------------------------------------------
+
+    clk_process : process
+    begin
+        while true loop
+            KEY(0) <= '1';
+            wait for CLK_PERIOD / 2;
+
+            KEY(0) <= '0';
+            wait for CLK_PERIOD / 2;
+        end loop;
+    end process;
+
+    ----------------------------------------------------------------
+    -- TEST SEQUENCE
+    ----------------------------------------------------------------
+
+    stim_proc : process
+    begin
+
+        ----------------------------------------------------------------
+        -- START
+        ----------------------------------------------------------------
+
+        report "=== START TESTBENCH ===";
+
+        wait for 50 ns;
+
+        ----------------------------------------------------------------
+        -- TRYB ALU
+        -- mode = 00
+        ----------------------------------------------------------------
+
+        report "=== TEST ALU MODE ===";
+
+        -- SW(9:8) = 00
+        -- SW(7:4) = 0010  -> wybór rejestru
+        -- SW(3:0) = 0000  -> operacja ALU
+
+        SW <= "0000100000";
+
+        wait for 100 ns;
+
+        -- inna operacja ALU
+        SW <= "0000100001";
+
+        wait for 100 ns;
+
+        -- kolejna operacja
+        SW <= "0000100010";
+
+        wait for 100 ns;
+
+        ----------------------------------------------------------------
+        -- TRYB ZAPISU DO RAM
+        -- mode = 01
+        ----------------------------------------------------------------
+
+        report "=== TEST RAM WRITE MODE ===";
+
+        -- zapis warto?ci 0x55
+        -- mode = 01
+        -- dane/adres = 01010101
+
+        SW <= "0101010101";
+
+        wait for 100 ns;
+
+        -- zapis warto?ci 0xAA
+        SW <= "0110101010";
+
+        wait for 100 ns;
+
+        ----------------------------------------------------------------
+        -- TRYB ODCZYTU Z RAM
+        -- mode = 10
+        ----------------------------------------------------------------
+
+        report "=== TEST RAM READ MODE ===";
+
+        -- odczyt spod adresu 0x55
+
+        SW <= "1001010101";
+
+        wait for 100 ns;
+
+        -- odczyt spod adresu 0xAA
+
+        SW <= "1010101010";
+
+        wait for 100 ns;
+
+        ----------------------------------------------------------------
+        -- TRYB DEBUG
+        -- mode = 11
+        ----------------------------------------------------------------
+
+        report "=== TEST DEBUG MODE ===";
+
+        SW <= "1100100000";
+
+        wait for 100 ns;
+
+        SW <= "1111000000";
+
+        wait for 100 ns;
+
+        ----------------------------------------------------------------
+        -- KONIEC
+        ----------------------------------------------------------------
+
+        report "=== END OF SIMULATION ===";
+
+        wait;
+
+    end process;
+
+end architecture;
