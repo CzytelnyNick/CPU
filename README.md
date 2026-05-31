@@ -224,9 +224,39 @@ Obsługa na płytce:
 
 ---
 
+---
+
+## Testbenche
+
+W projekcie sa trzy testbenche:
+
+| Plik | Co sprawdza |
+|------|-------------|
+| `alu_tb.vhd` | wszystkie 22 rozkazy ALU i flagi |
+| `control_tb.vhd` | sama jednostka sterujaca: `f0`, `f1`, `decode`, `exec_alu`, `exec_ldi`, `BRZ` |
+| `cpu_tb.vhd` | integracja top-level: tryb ALU oraz pierwsze pobranie instrukcji do `IR` |
+
+Najbardziej przydatny do pokazania control jest `control_tb.vhd`, bo nie wymaga
+calego datapath ani RAM. Oczekiwane przejscie dla `ADD rA,rB`:
+
+```text
+reset -> f0 -> f1 -> decode -> exec_alu -> f0
+```
+
+W stanie `exec_alu` testbench sprawdza:
+
+```text
+Salu = 00000  -- ADD
+Sbb  = 0010   -- rA jako BB
+Sbc  = 0011   -- rB jako BC
+Sba  = 0010   -- zapis do rA
+LDF  = 1      -- ladowanie flag
+```
+
 ## Najważniejsze pliki
 
 - `control.vhd` - jednostka sterująca procesora
+- `control_tb.vhd` - osobny testbench jednostki sterującej
 - `CPU.vhd` - top-level DE1-SoC z trybem ALU i trybem procesora
 - `alu.vhd` - ALU 16-bit z 22 rozkazami
 - `register_cpu.vhd` - plik rejestrów, PC, SP, AD, IR
