@@ -1,325 +1,137 @@
-# Instrukcja obsługi płytki DE1-SoC / DE0 — CPU 16-bit
+# ALU 16-bit na DE1-SoC - 22 rozkazy
 
-## Zasady ogólne
+Projekt uruchamia demonstrator ALU na plytce **DE1-SoC**. Wynik jest
+pokazywany na wyswietlaczach HEX w czasie rzeczywistym, bez klikania zegara.
 
-- Przełączniki SW: **w górę = 1, w dół = 0** (liczymy od prawej: SW0 = skrajny prawy)
-- KEY[0] = zegar — wciśnij i puść = 1 cykl zegarowy
-- KEY[1] = reset — wciśnij i puść = zeruje wszystkie rejestry
-- Wynik ALU widoczny na **HEX3..HEX0** w czasie rzeczywistym (bez klikania KEY)
-- **Zawsze sprawdź HEX przed kliknięciem KEY[0]** — na płytce nie ma cofnij
+Kod operacji ALU ma teraz **5 bitow**, wiec mozna wybrac wiecej niz 16 rozkazow:
 
----
-
-## Legenda przełączników SW[9:0]
-
-```
-SW9  SW8  SW7  SW6  SW5  SW4  SW3  SW2  SW1  SW0
-DST  WEN  Sbc  Sbc  Sbb  Sbb  ALU  ALU  ALU  ALU
+```text
+2^4 = 16  za malo
+2^5 = 32  wystarczy dla 22 rozkazow
 ```
 
-| Pole   | Bity   | Wartości                              |
-|--------|--------|---------------------------------------|
-| DST    | SW[9]  | 0 = zapisz do rA, 1 = zapisz do rB   |
-| WEN    | SW[8]  | 0 = tylko podgląd, 1 = zapisz wynik  |
-| Sbc    | SW[7:6]| 00=rA, 01=rB, 10=rC, 11=DI           |
-| Sbb    | SW[5:4]| 00=rA, 01=rB, 10=rC, 11=DI           |
-| ALU    | SW[3:0]| patrz tabela operacji poniżej         |
+## Mapowanie przelacznikow SW[9:0]
 
-### Tabela kodów operacji ALU (SW[3:0])
-
-| Kod  | Operacja | Opis                   |
-|------|----------|------------------------|
-| 0000 | PASS BB  | przepisz rA na wyjście |
-| 0001 | PASS BC  | przepisz rB na wyjście |
-| 0010 | ADD      | rA + rB                |
-| 0011 | SUB      | rA - rB                |
-| 0100 | OR       | rA or rB               |
-| 0101 | AND      | rA and rB              |
-| 0110 | XOR      | rA xor rB              |
-| 0111 | XNOR     | rA xnor rB             |
-| 1000 | NOT      | not rA                 |
-| 1001 | NEG      | -rA                    |
-| 1010 | CLR      | wyzeruj                |
-| 1011 | ADC      | rA + rB + C            |
-| 1100 | SBB      | rA - rB - C            |
-| 1101 | INC      | rA + 1                 |
-| 1110 | SHL      | przesuń lewo o 1 bit   |
-| 1111 | SHR      | przesuń prawo o 1 bit  |
-
-### Odczyt flag z LEDR
-
-| LED    | Flaga | Znaczenie                        |
-|--------|-------|----------------------------------|
-| LEDR[3]| C     | przeniesienie (Carry)            |
-| LEDR[2]| Z     | wynik = 0 (Zero)                 |
-| LEDR[1]| S     | wynik ujemny (Sign)              |
-| LEDR[0]| P     | parzysta liczba jedynek (Parity) |
-
-> Dodatkowo: LEDR[4]=WEN, LEDR[5]=DST, LEDR[7:6]=Sbb, LEDR[9:8]=Sbc.
-
----
-
-## Test dodawania 7 + 2
-
-> Uwaga: nie można wpisać 7 bezpośrednio przez SW — używamy metody CLR + INC.
-
-### Krok 1 — Reset
-
-Ustaw wszystkie SW w dół. Wciśnij KEY[1] i puść.
-
-```
-SW  = 0000000000
-KEY[1]: wciśnij ↓ puść ↑
+```text
+SW9   SW8   SW7   SW6 SW5   SW4 SW3 SW2 SW1 SW0
+SWAP  S_F   C_in  PRESET    ALU opcode 5-bit
 ```
 
-HEX = `0000`, wszystkie LEDy zgaszone.
+| Pole | Bity | Znaczenie |
+|------|------|-----------|
+| `ALU opcode` | `SW[4:0]` | kod rozkazu ALU, zakres `00000`..`10101` |
+| `PRESET` | `SW[6:5]` | wybor gotowych argumentow `BB` i `BC` |
+| `C_in` | `SW[7]` | przeniesienie wejsciowe do ALU |
+| `S_F` | `SW[8]` | `0` = pokaz wynik, `1` = pokaz flagi w `HEX3..HEX0` |
+| `SWAP` | `SW[9]` | `0` = normalnie `BB,BC`, `1` = zamien argumenty |
 
----
+## Gotowe argumenty BB/BC
 
-### Krok 2 — Wyzeruj rA (CLR)
+| `SW[6:5]` | `BB` | `BC` | Do czego dobre |
+|-----------|------|------|----------------|
+| `00` | `0007` | `0002` | podstawowe ADD/SUB/MUL/DIV/MOD/CMP |
+| `01` | `8001` | `0001` | przesuniecia, rotacje, znak i carry |
+| `10` | `00F0` | `000F` | operacje logiczne |
+| `11` | `FFFF` | `0001` | carry, overflow dolnych 16 bitow, zero |
 
+Jesli `SW9=1`, ALU dostaje argumenty zamienione miejscami.
+
+## Wyswietlacze i LED
+
+| Wyjscie | Znaczenie |
+|---------|-----------|
+| `HEX3..HEX0` | 16-bitowy wynik ALU albo flagi, gdy `SW8=1` |
+| `HEX4` | flagi jako nibble `{C,Z,S,P}` |
+| `HEX5` | mlodsze 4 bity kodu operacji |
+| `LEDR[0]` | `P` - parity, parzysta liczba jedynek |
+| `LEDR[1]` | `S` - sign, najstarszy bit wyniku |
+| `LEDR[2]` | `Z` - zero, wynik rowny zero |
+| `LEDR[3]` | `C` - carry/borrow/blad dzielenia |
+| `LEDR[4]` | piaty bit kodu operacji `S_ALU[4]` |
+| `LEDR[6:5]` | aktualny preset |
+| `LEDR[7]` | `C_in` |
+| `LEDR[8]` | `S_F` |
+| `LEDR[9]` | `SWAP` |
+
+## Pelna tabela 22 rozkazow ALU
+
+Domyslny preset dla przykladow: `SW[6:5]=00`, czyli `BB=0007`, `BC=0002`.
+
+| Nr | Kod `SW[4:0]` | Rozkaz | Dzialanie | Przyklad HEX |
+|----|---------------|--------|-----------|--------------|
+| 0  | `00000` | `ADD`    | `BB + BC` | `0009` |
+| 1  | `00001` | `SUB`    | `BB - BC` | `0005` |
+| 2  | `00010` | `MUL`    | `BB * BC`, dolne 16 bitow | `000E` |
+| 3  | `00011` | `DIV`    | `BB / BC` | `0003` |
+| 4  | `00100` | `MOD`    | `BB mod BC` | `0001` |
+| 5  | `00101` | `INC`    | `BB + 1` | `0008` |
+| 6  | `00110` | `DEC`    | `BB - 1` | `0006` |
+| 7  | `00111` | `NEG`    | `-BB` w U2 | `FFF9` |
+| 8  | `01000` | `AND`    | `BB and BC` | `0002` |
+| 9  | `01001` | `OR`     | `BB or BC` | `0007` |
+| 10 | `01010` | `XOR`    | `BB xor BC` | `0005` |
+| 11 | `01011` | `NOT`    | `not BB` | `FFF8` |
+| 12 | `01100` | `NAND`   | `not (BB and BC)` | `FFFD` |
+| 13 | `01101` | `NOR`    | `not (BB or BC)` | `FFF8` |
+| 14 | `01110` | `SHL`    | przesuniecie logiczne w lewo o 1 | `000E` |
+| 15 | `01111` | `SHR`    | przesuniecie logiczne w prawo o 1 | `0003` |
+| 16 | `10000` | `SAR`    | przesuniecie arytmetyczne w prawo o 1 | preset `01`: `C000` |
+| 17 | `10001` | `ROL`    | rotacja w lewo o 1 | preset `01`: `0003` |
+| 18 | `10010` | `ROR`    | rotacja w prawo o 1 | preset `01`: `C000` |
+| 19 | `10011` | `CMP_EQ` | `1` gdy `BB = BC`, inaczej `0` | `0000` |
+| 20 | `10100` | `CMP_LT` | `1` gdy `signed(BB) < signed(BC)` | `0000` |
+| 21 | `10101` | `CMP_GT` | `1` gdy `signed(BB) > signed(BC)` | `0001` |
+
+Uwagi:
+
+- `DIV` i `MOD` dla `BC=0` zwracaja `0000` i ustawiaja flage `C=1`.
+- `MUL` zwraca dolne 16 bitow wyniku; `C=1`, gdy gorne 16 bitow nie sa zerem.
+- `CMP_LT` i `CMP_GT` porownuja liczby jako signed/U2.
+- Kody `10110`..`11111` sa wolne i zwracaja `0000`.
+
+## Szybkie testy na plytce
+
+Ustaw `SW[6:5]=00`, `SW8=0`, `SW9=0`.
+
+| Operacja | `SW[9:0]` | Oczekiwany wynik |
+|----------|-----------|------------------|
+| `ADD 7+2` | `0000000000` | `HEX3..HEX0 = 0009` |
+| `SUB 7-2` | `0000000001` | `HEX3..HEX0 = 0005` |
+| `MUL 7*2` | `0000000010` | `HEX3..HEX0 = 000E` |
+| `DIV 7/2` | `0000000011` | `HEX3..HEX0 = 0003` |
+| `MOD 7%2` | `0000000100` | `HEX3..HEX0 = 0001` |
+| `CMP_GT 7>2` | `0000010101` | `HEX3..HEX0 = 0001` |
+| `CMP_GT 2>7` z `SWAP` | `1000010101` | `HEX3..HEX0 = 0000` |
+
+Test przesuniec/rotacji z presetem `01`:
+
+| Operacja | `SW[9:0]` | Oczekiwany wynik |
+|----------|-----------|------------------|
+| `SAR 8001` | `0000110000` | `C000` |
+| `ROL 8001` | `0000110001` | `0003` |
+| `ROR 8001` | `0000110010` | `C000` |
+
+Podglad flag:
+
+```text
+SW8 = 1
+HEX3..HEX0 pokazuje wtedy 000{C,Z,S,P}
+HEX4 zawsze pokazuje {C,Z,S,P}
 ```
-SW9=0  SW8=1  SW7=0  SW6=0  SW5=0  SW4=0  SW3=1  SW2=0  SW1=1  SW0=0
-SW = 0100001010
+
+Przyklad dla `ADD 7+2`:
+
+```text
+SW = 0100000000
+HEX3..HEX0 = 0001
 ```
 
-Sprawdź HEX = `0000`, potem: KEY[0] wciśnij ↓ puść ↑
-
----
-
-### Krok 3 — Wpisz 7 do rA (INC × 7)
-
-```
-SW9=0  SW8=1  SW7=0  SW6=0  SW5=0  SW4=0  SW3=1  SW2=1  SW1=0  SW0=1
-SW = 0100001101
-```
-
-Klikaj KEY[0] **7 razy**. HEX powinno rosnąć po każdym kliknięciu:
-
-| Kliknięcie | HEX      |
-|------------|----------|
-| 1          | `0001`   |
-| 2          | `0002`   |
-| 3          | `0003`   |
-| 4          | `0004`   |
-| 5          | `0005`   |
-| 6          | `0006`   |
-| **7**      | **`0007` ✓** |
-
----
-
-### Krok 4 — Wyzeruj rB (CLR)
-
-```
-SW9=1  SW8=1  SW7=0  SW6=0  SW5=0  SW4=0  SW3=1  SW2=0  SW1=1  SW0=0
-SW = 1100001010
-```
-
-Sprawdź HEX = `0000`, potem: KEY[0] wciśnij ↓ puść ↑
-
----
-
-### Krok 5 — Wpisz 2 do rB (INC × 2)
-
-```
-SW9=1  SW8=1  SW7=0  SW6=0  SW5=1  SW4=0  SW3=1  SW2=1  SW1=0  SW0=1
-SW = 1100011101
-```
-
-Klikaj KEY[0] **2 razy**:
-
-| Kliknięcie | HEX      |
-|------------|----------|
-| 1          | `0001`   |
-| **2**      | **`0002` ✓** |
-
----
-
-### Krok 6 — Podgląd ADD (nie klikaj KEY!)
-
-```
-SW9=0  SW8=0  SW7=0  SW6=1  SW5=0  SW4=0  SW3=0  SW2=0  SW1=1  SW0=0
-SW = 0001000010
-```
-
-**Sprawdź HEX przed kliknięciem!**
-
-- HEX = `0009` ✓ — kontynuuj
-- HEX ≠ `0009` — wróć do Kroku 1
-
-LEDR: C=0, S=0, Z=0, P=1
-
----
-
-### Krok 7 — Zapisz wynik do rA
-
-```
-SW9=0  SW8=1  SW7=0  SW6=1  SW5=0  SW4=0  SW3=0  SW2=0  SW1=1  SW0=0
-SW = 0101000010
-```
-
-KEY[0] wciśnij ↓ puść ↑
-
-**HEX = `0009` ✓ — wynik 9 zapisany w rA.**
-
----
-
-## Wszystkie operacje ALU na płytce
-
-Zakładamy że rA=7 i rB=2 są już wpisane (po teście dodawania).  
-Ustaw SW i **sprawdź HEX bez klikania KEY**. Jeśli chcesz zapisać wynik — ustaw SW[8]=1 i kliknij KEY[0].
-
----
-
-### ADD — 7 + 2 = 9
-
-```
-SW = 0001000010
-```
-HEX = `0009` | LEDR: C=0 S=0 Z=0 P=1
-
----
-
-### SUB — 7 - 2 = 5
-
-```
-SW = 0001000011
-```
-HEX = `0005` | LEDR: C=0 S=0 Z=0 P=1
-
----
-
-### AND — 7 and 2 = 2
-
-```
-SW = 0001000101
-```
-HEX = `0002` | LEDR: C=0 S=0 Z=0 P=0  (wynik 2 ma nieparzysta liczbe jedynek)
-
----
-
-### OR — 7 or 2 = 7
-
-```
-SW = 0001000100
-```
-HEX = `0007` | LEDR: C=0 S=0 Z=0 P=0  (wynik 7 = trzy jedynki, nieparzysta)
-
----
-
-### XOR — 7 xor 2 = 5
-
-```
-SW = 0001000110
-```
-HEX = `0005` | LEDR: C=0 S=0 Z=0 P=1
-
----
-
-### NOT — not 7 = FFF8
-
-```
-SW = 0000001000
-```
-HEX = `FFF8` | LEDR: S=1 (wynik ujemny w U2)
-
----
-
-### NEG — -7 = FFF9
-
-```
-SW = 0000001001
-```
-HEX = `FFF9` | LEDR: S=1
-
----
-
-### INC — 7 + 1 = 8
-
-```
-SW = 0000001101
-```
-HEX = `0008`
-
----
-
-### SHL — 7 × 2 = 14
-
-```
-SW = 0000001110
-```
-HEX = `000E`
-
----
-
-### SHR — 7 ÷ 2 = 3
-
-```
-SW = 0000001111
-```
-HEX = `0003` | LEDR: C=1 (wypadł bit LSB)
-
----
-
-### CLR — zerowanie
-
-```
-SW = 0000001010
-```
-HEX = `0000` | LEDR: Z=1
-
----
-
-### ADC — 7 + 2 + C_in
-
-```
-SW = 0001001011
-```
-> UWAGA: w obecnej wersji `CPU.vhd` wejscie `C_in` ALU jest na stale ustawione na `0`
-> (nie ma rejestru flagi przeniesienia). Dlatego na plytce **ADC dziala jak ADD**:
-> HEX = `0009`. Aby uzyskac `000A`, trzeba doprowadzic do `C_in` zapamietana flage C.
-
----
-
-### SBB — 7 - 2 - C_in
-
-```
-SW = 0001001100
-```
-> UWAGA: jak wyzej — `C_in = 0`, wiec **SBB dziala jak SUB**: HEX = `0005`.
-
----
-
-## Tabela wszystkich operacji — szybka ściągawka
-
-| Operacja | SW[9:0]      | HEX     | C | Z | S | P |
-|----------|--------------|---------|---|---|---|---|
-| ADD      | `0001000010` | `0009`  | 0 | 0 | 0 | 1 |
-| SUB      | `0001000011` | `0005`  | 0 | 0 | 0 | 1 |
-| AND      | `0001000101` | `0002`  | 0 | 0 | 0 | 0 |
-| OR       | `0001000100` | `0007`  | 0 | 0 | 0 | 0 |
-| XOR      | `0001000110` | `0005`  | 0 | 0 | 0 | 1 |
-| NOT      | `0000001000` | `FFF8`  | 0 | 0 | 1 | 0 |
-| NEG      | `0000001001` | `FFF9`  | 0 | 0 | 1 | 1 |
-| INC      | `0000001101` | `0008`  | 0 | 0 | 0 | 0 |
-| SHL      | `0000001110` | `000E`  | 0 | 0 | 0 | 0 |
-| SHR      | `0000001111` | `0003`  | 1 | 0 | 0 | 1 |
-| CLR      | `0000001010` | `0000`  | 0 | 1 | 0 | 1 |
-| ADC*     | `0001001011` | `0009`  | 0 | 0 | 0 | 1 |
-| SBB*     | `0001001100` | `0005`  | 0 | 0 | 0 | 1 |
-
-> \* `C_in` jest na stale `0` w `CPU.vhd`, wiec ADC=ADD i SBB=SUB (patrz uwagi wyzej).
-> P = 1 oznacza **parzysta** liczba jedynek w wyniku.
-
----
-
-## Jak zapisać wynik dowolnej operacji
-
-Weź SW z kolumny tabeli, zmień **SW[8] na 1** i kliknij KEY[0].
-
-Przykład — zapisz wynik SUB (5) do rA:
-```
-SW = 0101000011   (SW[8]=1, reszta jak dla SUB)
-KEY[0]: wciśnij ↓ puść ↑
-```
-HEX = `0005` pozostaje, rA = 5 zapisane.
+bo flagi sa `{C,Z,S,P} = 0001`.
+
+## Pliki
+
+- `alu.vhd` - ALU z 22 rozkazami i 5-bitowym `S_ALU`
+- `CPU.vhd` - top-level pod DE1-SoC z mapowaniem `SW/HEX/LEDR`
+- `ALU_OPERACJE_22.md` - sama tabela rozkazow do skopiowania
+- `alu_tb.vhd` - testbench wszystkich 22 operacji
+- `cpu_tb.vhd` - testbench mapowania plytki
