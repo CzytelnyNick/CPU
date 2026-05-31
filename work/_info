@@ -1,0 +1,227 @@
+m255
+K4
+z2
+!s99 nomlopt
+!s11e vcom 2021.2 2021.04, Apr 14 2021
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/odrow/OneDrive/Dokumenty/quartus/CPU
+T_opt
+!s110 1780172532
+Vi=bZ`SC2O_YDV993S1m<`1
+04 3 3 work cpu rtl 1
+=1-a029427a4fea-6a1b46f3-3de-32d8
+!s124 OEM10U5 
+o-quiet -auto_acc_if_foreign -work work
+tCvgOpt 0
+n@_opt
+OL;O;2021.2;73
+Ealu
+Z1 w1780170536
+Z2 DPx4 ieee 11 numeric_std 0 22 aU^R8eGcicLcUFIaBQSL>3
+Z3 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
+Z4 DPx4 ieee 14 std_logic_1164 0 22 cVAk:aDinOX8^VGI1ekP<3
+!i122 0
+R0
+Z5 8alu.vhd
+Z6 Falu.vhd
+l0
+L42 1
+Vmbo9BnIG<U?>b8W[3:D>C1
+!s100 kSTEnQoIE03]ag6X=mTz;3
+Z7 OL;C;2021.2;73
+32
+Z8 !s110 1780172516
+!i10b 1
+Z9 !s108 1780172516.000000
+Z10 !s90 -reportprogress|300|CPU.vhd|register_cpu.vhd|ram.vhd|busint.vhd|alu.vhd|
+Z11 !s107 alu.vhd|busint.vhd|ram.vhd|register_cpu.vhd|CPU.vhd|
+!i113 0
+Z12 tExplicit 1 CvgOpt 0
+Abehavioral
+R2
+R3
+R4
+DEx4 work 3 alu 0 22 mbo9BnIG<U?>b8W[3:D>C1
+!i122 0
+l68
+L58 141
+VJ]RGaejd]lDL`<KCWCMT10
+!s100 ZeZ14WUh61@2@Oz__cL^[3
+R7
+32
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 0
+R12
+Ebusint
+Z13 w1780170514
+R2
+R3
+R4
+!i122 0
+R0
+Z14 8busint.vhd
+Z15 Fbusint.vhd
+l0
+L36 1
+V0``jE?j7hfLAFKI;2OUb53
+!s100 fP4;L6ad0?W_13I1WneW11
+R7
+32
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 0
+R12
+Artl
+R2
+R3
+R4
+DEx4 work 6 busint 0 22 0``jE?j7hfLAFKI;2OUb53
+!i122 0
+l58
+L54 51
+VbkelgOHkolfSMzDi@8Xg83
+!s100 WVEYYh;?AM4E9U_1?X@ai3
+R7
+32
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 0
+R12
+Ecpu
+Z16 w1780170593
+R2
+R3
+R4
+!i122 0
+R0
+Z17 8CPU.vhd
+Z18 FCPU.vhd
+l0
+L54 1
+VX:LhNKBQK=iLO:R82o>Sb3
+!s100 4Qi49e7^KV7SZQUXl_m>X2
+R7
+32
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 0
+R12
+Artl
+R2
+R3
+R4
+DEx4 work 3 cpu 0 22 X:LhNKBQK=iLO:R82o>Sb3
+!i122 0
+l190
+L68 294
+VGSB65<MBgCjz1czVa2fg^0
+!s100 ag`NhZ<?06KYNNKXKgU[C1
+R7
+32
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 0
+R12
+Eram
+Z19 w1779123824
+R2
+R3
+R4
+!i122 0
+R0
+Z20 8ram.vhd
+Z21 Fram.vhd
+l0
+L33 1
+VBeQg>WXG:fR``b<LT4`]P3
+!s100 ]^BkTgUm:2=FN@M_Rc^8@0
+R7
+32
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 0
+R12
+Artl
+R2
+R3
+R4
+DEx4 work 3 ram 0 22 BeQg>WXG:fR``b<LT4`]P3
+!i122 0
+l52
+L43 24
+V2mmJ3oVNzeOSA0^GXhIOa2
+!s100 @]P@_Si]9;gS25lj^k:i^0
+R7
+32
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 0
+R12
+Eregister_cpu
+Z22 w1780171006
+R2
+R3
+R4
+!i122 0
+R0
+Z23 8register_cpu.vhd
+Z24 Fregister_cpu.vhd
+l0
+L48 1
+VzoRh<>QI_F8cnl^COimK`0
+!s100 Z=H9m;^E>Fb>2N>Ha>fEL0
+R7
+32
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 0
+R12
+Artl
+R2
+R3
+R4
+DEx4 work 12 register_cpu 0 22 zoRh<>QI_F8cnl^COimK`0
+!i122 0
+l67
+L66 133
+VQ@;P0^:?TGoinb6F@@U@e3
+!s100 ?6JhAT8gk0TJdf:4zI__[2
+R7
+32
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 0
+R12
