@@ -61,6 +61,7 @@ set_global_assignment -name MIF_FILE ram_init.mif
 set_global_assignment -name VHDL_FILE cpu_tb.vhd
 set_global_assignment -name VHDL_FILE alu_tb.vhd
 set_global_assignment -name VHDL_FILE control_tb.vhd
+set_global_assignment -name VHDL_FILE ram_tb.vhd
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name EDA_SIMULATION_TOOL "Questa Intel FPGA (Verilog)"
@@ -81,3 +82,8 @@ set_global_assignment -name EDA_TEST_BENCH_NAME control_tb -section_id control_t
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id control_tb
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME control_tb -section_id control_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE control_tb.vhd -section_id control_tb
+
+set_global_assignment -name EDA_TEST_BENCH_NAME ram_tb -section_id ram_tb
+set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id ram_tb
+set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME ram_tb -section_id ram_tb
+set_global_assignment -name EDA_TEST_BENCH_FILE ram_tb.vhd -section_id ram_tb

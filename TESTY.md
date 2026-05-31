@@ -25,10 +25,12 @@ W projekcie sa trzy testbenche:
 |-----------|------------|---------------------|
 | `alu_tb.vhd` | wszystkie 22 rozkazy ALU i flagi `C/Z/S/P` | komunikat `ALU_TB: WSZYSTKIE TESTY PRZESZLY` |
 | `control_tb.vhd` | sama jednostka sterujaca: fetch, decode, ALU, LDI, BRZ | komunikat `CONTROL_TB: WSZYSTKIE TESTY PRZESZLY` |
+| `ram_tb.vhd` | sam modul RAM: zapis, odczyt, nadpisanie i rozne adresy | komunikat `RAM_TB: WSZYSTKIE TESTY PRZESZLY` |
 | `cpu_tb.vhd` | top-level: ALU demo, fetch z RAM, program demo do wyniku `0012`, HLT | komunikat `CPU_TB: WSZYSTKIE TESTY PRZESZLY` |
 
 W Quartus/ModelSim/Questa wybierz odpowiedni testbench i uruchom symulacje.
 Najwazniejszy test zbiorczy to `cpu_tb.vhd`, bo przechodzi przez caly top-level.
+Najwazniejszy test samej pamieci to `ram_tb.vhd`, bo sprawdza RAM bez controlera i busint.
 
 > Uwaga: w srodowisku cloud nie bylo dostepnego `ghdl`, `quartus`, `vcom` ani `vsim`,
 > wiec lokalnie trzeba uruchomic symulacje w Quartusie/ModelSimie na komputerze z narzedziami FPGA.
@@ -154,11 +156,43 @@ bo flagi dla `7+2=9` sa:
 
 ---
 
-## 3. Test RAM i programu procesora (`SW9=1`)
+## 3. Test samego modulu RAM (`ram_tb.vhd`)
+
+Ten test jest niezalezny od procesora i jednostki sterujacej. Sprawdza tylko
+`ram.vhd`.
+
+### 3.1. Co sprawdza `ram_tb.vhd`
+
+`ram_tb.vhd` wykonuje:
+
+| Krok | Operacja | Oczekiwany rezultat |
+|------|----------|---------------------|
+| RAM-1 | zapis `4407` pod adres `0x000` | odczyt z `0x000` daje `4407` |
+| RAM-2 | zapis `0012` pod adres `0x020` | odczyt z `0x020` daje `0012` |
+| RAM-3 | zapis `ABCD` pod adres `0x100` | odczyt z `0x100` daje `ABCD` |
+| RAM-4 | zapis `FFFF` pod adres `0x3FF` | odczyt z `0x3FF` daje `FFFF` |
+| RAM-5 | zapis `2222` pod `0x021`, potem nadpisanie `0x020=1234` | `0x020=1234`, a `0x021=2222` |
+
+Oczekiwany komunikat koncowy:
+
+```text
+RAM_TB: WSZYSTKIE TESTY PRZESZLY
+```
+
+Ten test potwierdza:
+
+- zapis synchroniczny na zboczu zegara,
+- odczyt asynchroniczny,
+- dzialanie adresowania 10-bit,
+- brak przypadkowego psucia sasiedniego adresu.
+
+---
+
+## 4. Test RAM i programu procesora (`SW9=1`)
 
 Ten test sprawdza RAM, `busint`, rejestr `IR`, jednostke sterujaca i wykonanie programu z `ram_init.mif`.
 
-### 3.1. Program w RAM
+### 4.1. Program w RAM
 
 Po resecie `PC=0`, wiec CPU wykonuje program od adresu `000`:
 
@@ -180,7 +214,7 @@ Wynik programu:
 
 Instrukcja `STORE` zapisuje `0012` do RAM pod adresem `0x20`, a `LOAD` odczytuje ten wynik.
 
-### 3.2. Ustawienia plytki
+### 4.2. Ustawienia plytki
 
 1. Ustaw `SW9=1`, czyli tryb procesora.
 2. Wcisnij i pusc `KEY1`, czyli reset.
@@ -196,7 +230,7 @@ Podglady w trybie procesora:
 | `10` | `DI`, czyli dane odczytane z RAM przez `busint` |
 | `11` | adres fizyczny RAM |
 
-### 3.3. Oczekiwana sekwencja klikniec
+### 4.3. Oczekiwana sekwencja klikniec
 
 | Liczba klikniec `KEY0` od resetu | Ustawienie podgladu | Oczekiwany wynik |
 |----------------------------------|---------------------|------------------|
@@ -219,11 +253,11 @@ to test RAM/programu przeszedl.
 
 ---
 
-## 4. Test controlera / jednostki sterujacej
+## 5. Test controlera / jednostki sterujacej
 
 Controler jest w pliku `control.vhd`. Najprostszy test automatyczny to `control_tb.vhd`.
 
-### 4.1. Co sprawdza `control_tb.vhd`
+### 5.1. Co sprawdza `control_tb.vhd`
 
 Testbench sprawdza:
 
@@ -241,7 +275,7 @@ Testbench sprawdza:
 6. dla instrukcji `4407` przechodzi do `exec_ldi`,
 7. dla instrukcji `C004` sprawdza `BRZ` przy `Z=0` i `Z=1`.
 
-### 4.2. Test reczny controlera na plytce
+### 5.2. Test reczny controlera na plytce
 
 Ustaw:
 
@@ -281,7 +315,7 @@ To oznacza, ze controler doszedl do instrukcji `HLT`.
 
 ---
 
-## 5. Szybka lista zaliczeniowa
+## 6. Szybka lista zaliczeniowa
 
 Do pokazania prowadzacemu wystarczy przejsc przez te punkty:
 
@@ -289,7 +323,7 @@ Do pokazania prowadzacemu wystarczy przejsc przez te punkty:
 2. **Flagi:** ustaw `SW=0100000000`, sprawdz `HEX3..HEX0=0001`.
 3. **RAM/program:** ustaw `SW9=1`, reset, kliknij `KEY0` 28 razy, ustaw `SW[7:6]=10`, sprawdz `0012`.
 4. **Controler:** kliknij do 31 taktu, ustaw `SW[7:6]=00`, sprawdz `IR=1F00` i `HEX5=F`.
-5. **Symulacja:** uruchom `alu_tb.vhd`, `control_tb.vhd`, `cpu_tb.vhd`.
+5. **Symulacja:** uruchom `alu_tb.vhd`, `ram_tb.vhd`, `control_tb.vhd`, `cpu_tb.vhd`.
 
 Jesli wszystkie punkty przejda, to przetestowane sa: ALU, flagi, RAM, busint,
 plik rejestrow, jednostka sterujaca i top-level `CPU.vhd`.
