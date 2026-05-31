@@ -1,137 +1,235 @@
-# ALU 16-bit na DE1-SoC - 22 rozkazy
+# CPU 16-bit na DE1-SoC - ALU 22 rozkazy + jednostka sterujaca
 
-Projekt uruchamia demonstrator ALU na plytce **DE1-SoC**. Wynik jest
-pokazywany na wyswietlaczach HEX w czasie rzeczywistym, bez klikania zegara.
-
-Kod operacji ALU ma teraz **5 bitow**, wiec mozna wybrac wiecej niz 16 rozkazow:
+Projekt ma teraz dwa tryby pracy wybierane przełącznikiem `SW9`:
 
 ```text
-2^4 = 16  za malo
-2^5 = 32  wystarczy dla 22 rozkazow
+SW9 = 0  demonstrator ALU na 22 rozkazy
+SW9 = 1  prosty procesor: RAM -> IR -> control -> rejestry/ALU/busint
 ```
 
-## Mapowanie przelacznikow SW[9:0]
+`KEY[0]` jest ręcznym zegarem w trybie procesora, a `KEY[1]` jest resetem
+aktywnym niskim stanem.
+
+---
+
+## Tryb 1: demonstrator ALU (`SW9=0`)
 
 ```text
-SW9   SW8   SW7   SW6 SW5   SW4 SW3 SW2 SW1 SW0
-SWAP  S_F   C_in  PRESET    ALU opcode 5-bit
+SW8   SW7   SW6 SW5   SW4 SW3 SW2 SW1 SW0
+S_F   C_in  PRESET    ALU opcode 5-bit
 ```
 
 | Pole | Bity | Znaczenie |
 |------|------|-----------|
 | `ALU opcode` | `SW[4:0]` | kod rozkazu ALU, zakres `00000`..`10101` |
-| `PRESET` | `SW[6:5]` | wybor gotowych argumentow `BB` i `BC` |
-| `C_in` | `SW[7]` | przeniesienie wejsciowe do ALU |
-| `S_F` | `SW[8]` | `0` = pokaz wynik, `1` = pokaz flagi w `HEX3..HEX0` |
-| `SWAP` | `SW[9]` | `0` = normalnie `BB,BC`, `1` = zamien argumenty |
+| `PRESET` | `SW[6:5]` | gotowe argumenty `BB` i `BC` |
+| `C_in` | `SW[7]` | przeniesienie wejściowe do ALU |
+| `S_F` | `SW[8]` | `0` = wynik, `1` = flagi na `HEX3..HEX0` |
 
-## Gotowe argumenty BB/BC
+Presety argumentów:
 
-| `SW[6:5]` | `BB` | `BC` | Do czego dobre |
-|-----------|------|------|----------------|
-| `00` | `0007` | `0002` | podstawowe ADD/SUB/MUL/DIV/MOD/CMP |
-| `01` | `8001` | `0001` | przesuniecia, rotacje, znak i carry |
-| `10` | `00F0` | `000F` | operacje logiczne |
-| `11` | `FFFF` | `0001` | carry, overflow dolnych 16 bitow, zero |
+| `SW[6:5]` | `BB` | `BC` |
+|-----------|------|------|
+| `00` | `0007` | `0002` |
+| `01` | `8001` | `0001` |
+| `10` | `00F0` | `000F` |
+| `11` | `FFFF` | `0001` |
 
-Jesli `SW9=1`, ALU dostaje argumenty zamienione miejscami.
+Wynik jest na `HEX3..HEX0`, flagi na `HEX4`, a młodsze 4 bity kodu ALU na
+`HEX5`.
 
-## Wyswietlacze i LED
+---
 
-| Wyjscie | Znaczenie |
-|---------|-----------|
-| `HEX3..HEX0` | 16-bitowy wynik ALU albo flagi, gdy `SW8=1` |
-| `HEX4` | flagi jako nibble `{C,Z,S,P}` |
-| `HEX5` | mlodsze 4 bity kodu operacji |
-| `LEDR[0]` | `P` - parity, parzysta liczba jedynek |
-| `LEDR[1]` | `S` - sign, najstarszy bit wyniku |
-| `LEDR[2]` | `Z` - zero, wynik rowny zero |
-| `LEDR[3]` | `C` - carry/borrow/blad dzielenia |
-| `LEDR[4]` | piaty bit kodu operacji `S_ALU[4]` |
-| `LEDR[6:5]` | aktualny preset |
-| `LEDR[7]` | `C_in` |
-| `LEDR[8]` | `S_F` |
-| `LEDR[9]` | `SWAP` |
+## 22 rozkazy ALU
 
-## Pelna tabela 22 rozkazow ALU
+| Nr | Kod `SW[4:0]` / `Salu` | Rozkaz | Działanie |
+|----|------------------------|--------|-----------|
+| 0  | `00000` | `ADD`    | `BB + BC` |
+| 1  | `00001` | `SUB`    | `BB - BC` |
+| 2  | `00010` | `MUL`    | `BB * BC`, dolne 16 bitów |
+| 3  | `00011` | `DIV`    | `BB / BC` |
+| 4  | `00100` | `MOD`    | `BB mod BC` |
+| 5  | `00101` | `INC`    | `BB + 1` |
+| 6  | `00110` | `DEC`    | `BB - 1` |
+| 7  | `00111` | `NEG`    | `-BB` w U2 |
+| 8  | `01000` | `AND`    | `BB and BC` |
+| 9  | `01001` | `OR`     | `BB or BC` |
+| 10 | `01010` | `XOR`    | `BB xor BC` |
+| 11 | `01011` | `NOT`    | `not BB` |
+| 12 | `01100` | `NAND`   | `not (BB and BC)` |
+| 13 | `01101` | `NOR`    | `not (BB or BC)` |
+| 14 | `01110` | `SHL`    | przesunięcie logiczne w lewo |
+| 15 | `01111` | `SHR`    | przesunięcie logiczne w prawo |
+| 16 | `10000` | `SAR`    | przesunięcie arytmetyczne w prawo |
+| 17 | `10001` | `ROL`    | rotacja w lewo |
+| 18 | `10010` | `ROR`    | rotacja w prawo |
+| 19 | `10011` | `CMP_EQ` | `0001`, gdy `BB = BC` |
+| 20 | `10100` | `CMP_LT` | `0001`, gdy `signed(BB) < signed(BC)` |
+| 21 | `10101` | `CMP_GT` | `0001`, gdy `signed(BB) > signed(BC)` |
 
-Domyslny preset dla przykladow: `SW[6:5]=00`, czyli `BB=0007`, `BC=0002`.
+---
 
-| Nr | Kod `SW[4:0]` | Rozkaz | Dzialanie | Przyklad HEX |
-|----|---------------|--------|-----------|--------------|
-| 0  | `00000` | `ADD`    | `BB + BC` | `0009` |
-| 1  | `00001` | `SUB`    | `BB - BC` | `0005` |
-| 2  | `00010` | `MUL`    | `BB * BC`, dolne 16 bitow | `000E` |
-| 3  | `00011` | `DIV`    | `BB / BC` | `0003` |
-| 4  | `00100` | `MOD`    | `BB mod BC` | `0001` |
-| 5  | `00101` | `INC`    | `BB + 1` | `0008` |
-| 6  | `00110` | `DEC`    | `BB - 1` | `0006` |
-| 7  | `00111` | `NEG`    | `-BB` w U2 | `FFF9` |
-| 8  | `01000` | `AND`    | `BB and BC` | `0002` |
-| 9  | `01001` | `OR`     | `BB or BC` | `0007` |
-| 10 | `01010` | `XOR`    | `BB xor BC` | `0005` |
-| 11 | `01011` | `NOT`    | `not BB` | `FFF8` |
-| 12 | `01100` | `NAND`   | `not (BB and BC)` | `FFFD` |
-| 13 | `01101` | `NOR`    | `not (BB or BC)` | `FFF8` |
-| 14 | `01110` | `SHL`    | przesuniecie logiczne w lewo o 1 | `000E` |
-| 15 | `01111` | `SHR`    | przesuniecie logiczne w prawo o 1 | `0003` |
-| 16 | `10000` | `SAR`    | przesuniecie arytmetyczne w prawo o 1 | preset `01`: `C000` |
-| 17 | `10001` | `ROL`    | rotacja w lewo o 1 | preset `01`: `0003` |
-| 18 | `10010` | `ROR`    | rotacja w prawo o 1 | preset `01`: `C000` |
-| 19 | `10011` | `CMP_EQ` | `1` gdy `BB = BC`, inaczej `0` | `0000` |
-| 20 | `10100` | `CMP_LT` | `1` gdy `signed(BB) < signed(BC)` | `0000` |
-| 21 | `10101` | `CMP_GT` | `1` gdy `signed(BB) > signed(BC)` | `0001` |
+## Tryb 2: procesor z jednostką sterującą (`SW9=1`)
 
-Uwagi:
-
-- `DIV` i `MOD` dla `BC=0` zwracaja `0000` i ustawiaja flage `C=1`.
-- `MUL` zwraca dolne 16 bitow wyniku; `C=1`, gdy gorne 16 bitow nie sa zerem.
-- `CMP_LT` i `CMP_GT` porownuja liczby jako signed/U2.
-- Kody `10110`..`11111` sa wolne i zwracaja `0000`.
-
-## Szybkie testy na plytce
-
-Ustaw `SW[6:5]=00`, `SW8=0`, `SW9=0`.
-
-| Operacja | `SW[9:0]` | Oczekiwany wynik |
-|----------|-----------|------------------|
-| `ADD 7+2` | `0000000000` | `HEX3..HEX0 = 0009` |
-| `SUB 7-2` | `0000000001` | `HEX3..HEX0 = 0005` |
-| `MUL 7*2` | `0000000010` | `HEX3..HEX0 = 000E` |
-| `DIV 7/2` | `0000000011` | `HEX3..HEX0 = 0003` |
-| `MOD 7%2` | `0000000100` | `HEX3..HEX0 = 0001` |
-| `CMP_GT 7>2` | `0000010101` | `HEX3..HEX0 = 0001` |
-| `CMP_GT 2>7` z `SWAP` | `1000010101` | `HEX3..HEX0 = 0000` |
-
-Test przesuniec/rotacji z presetem `01`:
-
-| Operacja | `SW[9:0]` | Oczekiwany wynik |
-|----------|-----------|------------------|
-| `SAR 8001` | `0000110000` | `C000` |
-| `ROL 8001` | `0000110001` | `0003` |
-| `ROR 8001` | `0000110010` | `C000` |
-
-Podglad flag:
+W tym trybie `control.vhd` steruje całym datapath:
 
 ```text
-SW8 = 1
-HEX3..HEX0 pokazuje wtedy 000{C,Z,S,P}
-HEX4 zawsze pokazuje {C,Z,S,P}
+RAM -> busint -> register_cpu(IR/rejestry/PC/AD) -> ALU -> register_cpu
 ```
 
-Przyklad dla `ADD 7+2`:
+Cykl jednostki sterującej:
 
 ```text
-SW = 0100000000
-HEX3..HEX0 = 0001
+f0      pobranie instrukcji z RAM pod adresem PC, PC = PC + 1
+f1      wpisanie pobranego słowa do IR
+decode  dekodowanie IR
+execute wykonanie mikrooperacji danej instrukcji
 ```
 
-bo flagi sa `{C,Z,S,P} = 0001`.
+### Przełączniki w trybie procesora
 
-## Pliki
+```text
+SW9 = 1
+SW8 = INT
+SW7 SW6 = wybór podglądu na HEX3..HEX0
+```
 
-- `alu.vhd` - ALU z 22 rozkazami i 5-bitowym `S_ALU`
-- `CPU.vhd` - top-level pod DE1-SoC z mapowaniem `SW/HEX/LEDR`
-- `ALU_OPERACJE_22.md` - sama tabela rozkazow do skopiowania
-- `alu_tb.vhd` - testbench wszystkich 22 operacji
-- `cpu_tb.vhd` - testbench mapowania plytki
+| `SW[7:6]` | `HEX3..HEX0` pokazuje |
+|-----------|------------------------|
+| `00` | `IR` - aktualny rejestr rozkazu |
+| `01` | bieżący wynik ALU |
+| `10` | `DI` - dane odebrane z pamięci przez busint |
+| `11` | adres fizyczny RAM (`phys_addr`) |
+
+`HEX4` pokazuje zatrzaśnięte flagi `{C,Z,S,P}` procesora, a `HEX5` pokazuje
+aktualny stan jednostki sterującej.
+
+### LED w trybie procesora
+
+| LED | Znaczenie |
+|-----|-----------|
+| `LEDR[3:0]` | flagi `{P,S,Z,C}` |
+| `LEDR[4]` | `LDF`, ładowanie flag |
+| `LEDR[5]` | `RD` z busint |
+| `LEDR[6]` | `WR` z busint |
+| `LEDR[7]` | `MIO`, wybór danych z pamięci do zapisu w rejestrach |
+| `LEDR[8]` | `INTA` |
+| `LEDR[9]` | tryb procesora aktywny |
+
+---
+
+## Format instrukcji IR
+
+Rejestry używają kodów z `register_cpu.vhd`:
+
+```text
+0000=DI   0001=TMP  0010=rA  0011=rB
+0100=rC   0101=rD   0110=rE  0111=rF
+1000=IR   1001=PC low  1010=PC high
+1011=SP low 1100=SP high 1101=AD low
+1110=ATMP low 1111=ATMP high
+```
+
+### `NOP` / `HLT`
+
+```text
+000 xxxxx ........
+```
+
+- `IR[12:8] = 11111` oznacza `HLT`
+- inne wartości w grupie `000` działają jak `NOP`
+
+### Instrukcja ALU
+
+```text
+001 ooooo dddd ssss
+```
+
+| Pole | Znaczenie |
+|------|-----------|
+| `ooooo` | 5-bitowy kod ALU, ta sama tabela co wyżej |
+| `dddd` | rejestr docelowy i argument `BB` |
+| `ssss` | rejestr źródłowy `BC` |
+
+Działanie:
+
+```text
+R[dddd] = R[dddd] op R[ssss]
+```
+
+Przykład:
+
+```text
+2023 = ADD rA, rB
+2223 = MUL rA, rB
+```
+
+### `LDI` - załaduj natychmiastową wartość 8-bit
+
+```text
+010 dddd 0 iiiiiiii
+```
+
+Przykład:
+
+```text
+4407 = LDI rA, 0x07
+4602 = LDI rB, 0x02
+```
+
+### `LOAD` / `STORE`
+
+```text
+011 dddd 0 aaaaaaaa   LOAD  R[dddd] = MEM[addr8]
+100 ssss 0 aaaaaaaa   STORE MEM[addr8] = R[ssss]
+```
+
+Przykład:
+
+```text
+8420 = STORE rA, [0x20]
+6820 = LOAD  rC, [0x20]
+```
+
+### `JMP` / `BRZ`
+
+```text
+101 0000 0 aaaaaaaa   JMP addr8
+110 0000 0 aaaaaaaa   BRZ addr8, gdy Z=1
+```
+
+---
+
+## Program startowy w `ram_init.mif`
+
+Po resecie `PC=0`, więc procesor wykonuje program od adresu `000`:
+
+| Adres | Kod | Instrukcja |
+|-------|-----|------------|
+| `000` | `4407` | `LDI rA, 0x07` |
+| `001` | `4602` | `LDI rB, 0x02` |
+| `002` | `2023` | `ADD rA, rB` |
+| `003` | `2223` | `MUL rA, rB` |
+| `004` | `8420` | `STORE rA, [0x20]` |
+| `005` | `6820` | `LOAD rC, [0x20]` |
+| `006` | `1F00` | `HLT` |
+
+Obsługa na płytce:
+
+1. Ustaw `SW9=1`.
+2. Wciśnij i puść `KEY1`, żeby zrobić reset.
+3. Ustaw `SW[7:6]=00`, żeby oglądać `IR`.
+4. Klikaj `KEY0`, każdy klik to jeden takt mikrosterowania.
+5. `HEX5` pokazuje stan control, a `HEX3..HEX0` pokazuje wybrany podgląd.
+
+---
+
+## Najważniejsze pliki
+
+- `control.vhd` - jednostka sterująca procesora
+- `CPU.vhd` - top-level DE1-SoC z trybem ALU i trybem procesora
+- `alu.vhd` - ALU 16-bit z 22 rozkazami
+- `register_cpu.vhd` - plik rejestrów, PC, SP, AD, IR
+- `busint.vhd` - interfejs pamięci
+- `ram.vhd` + `ram_init.mif` - pamięć programu/danych
+- `ALU_OPERACJE_22.md` - sama tabela rozkazów ALU

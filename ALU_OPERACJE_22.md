@@ -1,6 +1,6 @@
 # 22 rozkazy ALU
 
-Kod operacji ma 5 bitow: `S_ALU = SW[4:0]`.
+Kod operacji ma 5 bitow: `S_ALU` / `Salu`.
 
 | Nr | Kod | Rozkaz | Opis |
 |----|-----|--------|------|
@@ -27,29 +27,14 @@ Kod operacji ma 5 bitow: `S_ALU = SW[4:0]`.
 | 20 | `10100` | `CMP_LT` | wynik `0001`, gdy `signed(BB) < signed(BC)` |
 | 21 | `10101` | `CMP_GT` | wynik `0001`, gdy `signed(BB) > signed(BC)` |
 
-## Flagi
+## Na plytce DE1-SoC
 
-| Flaga | Znaczenie |
-|-------|-----------|
-| `C` | carry/borrow; dla `DIV`/`MOD` ustawiana na `1` przy dzieleniu przez zero |
-| `Z` | `1`, gdy wynik = `0000` |
-| `S` | znak wyniku, czyli bit `Y(15)` |
-| `P` | parzystosc, `1` gdy wynik ma parzysta liczbe jedynek |
-
-## DE1-SoC - obsluga z przelacznikow
+`SW9=0` wlacza demonstrator ALU:
 
 ```text
-SW9   SW8   SW7   SW6 SW5   SW4 SW3 SW2 SW1 SW0
-SWAP  S_F   C_in  PRESET    ALU opcode 5-bit
+SW8   SW7   SW6 SW5   SW4 SW3 SW2 SW1 SW0
+S_F   C_in  PRESET    ALU opcode 5-bit
 ```
 
-Presety argumentow:
-
-| `SW[6:5]` | `BB` | `BC` |
-|-----------|------|------|
-| `00` | `0007` | `0002` |
-| `01` | `8001` | `0001` |
-| `10` | `00F0` | `000F` |
-| `11` | `FFFF` | `0001` |
-
-Wynik jest na `HEX3..HEX0`, flagi sa na `HEX4` oraz `LEDR[3:0]`.
+`SW9=1` wlacza procesor. Wtedy jednostka sterujaca wystawia `Salu` sama z pola
+`IR[12:8]` instrukcji ALU.

@@ -1,39 +1,22 @@
--- Copyright (C) 2025  Altera Corporation. All rights reserved.
--- Your use of Altera Corporation's design tools, logic functions 
--- and other software and tools, and any partner logic 
--- functions, and any output files from any of the foregoing 
--- (including device programming or simulation files), and any 
--- associated documentation or information are expressly subject 
--- to the terms and conditions of the Altera Program License 
--- Subscription Agreement, the Altera Quartus Prime License Agreement,
--- the Altera IP License Agreement, or other applicable license
--- agreement, including, without limitation, that your use is for
--- the sole purpose of programming logic devices manufactured by
--- Altera and sold by Altera or its authorized distributors.  Please
--- refer to the Altera Software License Subscription Agreements 
--- on the Quartus Prime software download page.
-
--- Quartus Prime generated Memory Initialization File (.mif)
-
 WIDTH=16;
 DEPTH=1024;
 
-ADDRESS_RADIX = HEX; -- format adresow: HEX / DEC / OCT / BIN
-DATA_RADIX    = HEX; -- format danych:  HEX / DEC / OCT / BIN
-
+ADDRESS_RADIX = HEX;
+DATA_RADIX    = HEX;
 
 CONTENT BEGIN
-    000 : 0001;      -- segment 0
-    001 : 0002;
-    002 : 0003;
-    003 : ABCD;
-    004 : 1234;
-    005 : FFFF;
-    100 : 0010;      -- segment 1 (adres 256 dec)
-    200 : 0020;      -- segment 2 (adres 512 dec)
-    300 : 0030;      -- segment 3 (adres 768 dec)
-    [006..0FF] : 0000; -- wypelnienie segmentu 0
-    [101..1FF] : 0000;
-    [201..2FF] : 0000;
-    [301..3FF] : 0000;
+    -- Program demonstracyjny jednostki sterujacej:
+    -- rA = 7, rB = 2, rA = rA + rB, rA = rA * rB,
+    -- MEM[0x20] = rA, rC = MEM[0x20], HLT.
+    000 : 4407;  -- LDI rA, 0x07
+    001 : 4602;  -- LDI rB, 0x02
+    002 : 2023;  -- ADD rA, rB  -> rA = 9
+    003 : 2223;  -- MUL rA, rB  -> rA = 18 (0x0012)
+    004 : 8420;  -- STORE rA, [0x20]
+    005 : 6820;  -- LOAD rC, [0x20]
+    006 : 1F00;  -- HLT
+
+    [007..01F] : 0000;
+    020 : 0000;  -- miejsce na wynik STORE
+    [021..3FF] : 0000;
 END;

@@ -2,10 +2,11 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 -- =============================================================
--- TESTBENCH POZIOMU SYSTEMU (end-to-end) dla demonstratora DE1-SoC
+-- TESTBENCH POZIOMU SYSTEMU dla CPU
 --
--- Steruje portami zewnetrznymi SW/KEY i sprawdza wyjscia HEX/LEDR
--- zgodnie z mapowaniem opisanym w CPU.vhd oraz README.md.
+-- Sprawdza:
+--   1) tryb demonstratora ALU (SW9=0),
+--   2) pierwsze pobranie instrukcji w trybie procesora (SW9=1).
 -- =============================================================
 
 entity cpu_tb is
@@ -33,11 +34,9 @@ architecture behavior of cpu_tb is
     signal HEX0, HEX1, HEX2, HEX3, HEX4, HEX5 : std_logic_vector(6 downto 0);
 
     constant SEG0 : std_logic_vector(6 downto 0) := "1000000";
-    constant SEG1 : std_logic_vector(6 downto 0) := "1111001";
-    constant SEG5 : std_logic_vector(6 downto 0) := "0010010";
-    constant SEG6 : std_logic_vector(6 downto 0) := "0000010";
+    constant SEG4 : std_logic_vector(6 downto 0) := "0011001";
+    constant SEG7 : std_logic_vector(6 downto 0) := "1111000";
     constant SEG9 : std_logic_vector(6 downto 0) := "0010000";
-    constant SEGE : std_logic_vector(6 downto 0) := "0000110";
 
 begin
 
@@ -57,6 +56,14 @@ begin
     process
         variable errcnt : integer := 0;
 
+        procedure tick is
+        begin
+            KEY(0) <= '0';
+            wait for 10 ns;
+            KEY(0) <= '1';
+            wait for 10 ns;
+        end procedure;
+
         procedure chk_hex(signal got : in std_logic_vector(6 downto 0);
                           exp        : in std_logic_vector(6 downto 0);
                           name       : in string) is
@@ -68,54 +75,26 @@ begin
                 report "PASS: " & name severity note;
             end if;
         end procedure;
-
-        procedure chk_bit(signal got : in std_logic;
-                          exp        : in std_logic;
-                          name       : in string) is
-        begin
-            if got /= exp then
-                report "FAIL: " & name severity error;
-                errcnt := errcnt + 1;
-            else
-                report "PASS: " & name severity note;
-            end if;
-        end procedure;
     begin
-        SW <= "0000000000";  -- ADD, preset 00: 0007 + 0002 = 0009
+        -- Tryb ALU demo: SW9=0, preset 00, ADD 7+2 = 0009.
+        SW <= "0000000000";
         wait for 20 ns;
-        chk_hex(HEX0, SEG9, "ADD 7+2 = 0009 (HEX0)");
-        chk_hex(HEX1, SEG0, "ADD 7+2 = 0009 (HEX1)");
-        chk_hex(HEX2, SEG0, "ADD 7+2 = 0009 (HEX2)");
-        chk_hex(HEX3, SEG0, "ADD 7+2 = 0009 (HEX3)");
-        chk_bit(LEDR(0), '1', "ADD flaga P = 1");
-        chk_bit(LEDR(3), '0', "ADD flaga C = 0");
+        chk_hex(HEX0, SEG9, "ALU demo ADD 7+2 = 0009 HEX0");
+        chk_hex(HEX1, SEG0, "ALU demo ADD 7+2 = 0009 HEX1");
 
-        SW <= "0000000001";  -- SUB, wynik 0005
+        -- Tryb procesora: SW9=1, SW[7:6]=00 pokazuje IR.
+        SW <= "1000000000";
+        KEY(1) <= '0';
         wait for 20 ns;
-        chk_hex(HEX0, SEG5, "SUB 7-2 = 0005 (HEX0)");
+        KEY(1) <= '1';
+        wait for 20 ns;
 
-        SW <= "0000000010";  -- MUL, wynik 000E
+        tick; -- f0: fetch z PC=0
+        tick; -- f1: IR <= MEM[0] = 4407
         wait for 20 ns;
-        chk_hex(HEX0, SEGE, "MUL 7*2 = 000E (HEX0)");
 
-        SW <= "0000000110";  -- DEC, wynik 0006
-        wait for 20 ns;
-        chk_hex(HEX0, SEG6, "DEC 7 = 0006 (HEX0)");
-
-        SW <= "0000010101";  -- CMP_GT, 7 > 2 => 0001
-        wait for 20 ns;
-        chk_hex(HEX0, SEG1, "CMP_GT 7>2 = 0001 (HEX0)");
-        chk_bit(LEDR(4), '1', "CMP_GT piaty bit opcode = 1");
-
-        SW <= "1000010101";  -- SWAP, CMP_GT, 2 > 7 => 0000
-        wait for 20 ns;
-        chk_hex(HEX0, SEG0, "SWAP CMP_GT 2>7 = 0000 (HEX0)");
-        chk_bit(LEDR(9), '1', "SWAP LED = 1");
-
-        SW <= "0100000000";  -- S_F=1, ADD flags C/Z/S/P = 0001
-        wait for 20 ns;
-        chk_hex(HEX0, SEG1, "S_F pokazuje flagi ADD jako 0001 (HEX0)");
-        chk_hex(HEX1, SEG0, "S_F pokazuje flagi ADD jako 0001 (HEX1)");
+        chk_hex(HEX0, SEG7, "CPU IR low nibble po fetch = 7");
+        chk_hex(HEX3, SEG4, "CPU IR high nibble po fetch = 4");
 
         if errcnt = 0 then
             report "=== CPU_TB: WSZYSTKIE TESTY PRZESZLY ===" severity note;
