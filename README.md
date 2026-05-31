@@ -8,7 +8,8 @@ SW9 = 1  prosty procesor: RAM -> IR -> control -> rejestry/ALU/busint
 ```
 
 `KEY[0]` jest ręcznym zegarem w trybie procesora, a `KEY[1]` jest resetem
-aktywnym niskim stanem.
+aktywnym niskim stanem. Sygnały pamięci są wygaszane poza trybem procesora,
+więc demonstrator ALU nie wykonuje ukrytych cykli RAM w tle.
 
 ---
 
@@ -221,6 +222,21 @@ Obsługa na płytce:
 3. Ustaw `SW[7:6]=00`, żeby oglądać `IR`.
 4. Klikaj `KEY0`, każdy klik to jeden takt mikrosterowania.
 5. `HEX5` pokazuje stan control, a `HEX3..HEX0` pokazuje wybrany podgląd.
+
+Praktyczna sekwencja dla programu demo:
+
+| Liczba kliknięć `KEY0` od resetu | Co powinno być widać |
+|----------------------------------|----------------------|
+| `2` | `IR = 4407`, czyli `LDI rA, 7` |
+| `6` | `IR = 4602`, czyli `LDI rB, 2` |
+| `10` | `IR = 2023`, czyli `ADD rA, rB` |
+| `14` | `IR = 2223`, czyli `MUL rA, rB` |
+| `20` | `IR = 8420`, czyli `STORE rA, [0x20]` |
+| `26` | `IR = 6820`, czyli `LOAD rC, [0x20]` |
+| `28` | ustaw `SW[7:6]=10`; `HEX3..HEX0 = 0012`, czyli odczytany wynik |
+| `31` | `IR = 1F00`, `HEX5 = F`, czyli `HLT` |
+
+Dla tego programu wynik `0012` bierze się z obliczenia `(7 + 2) * 2 = 18`.
 
 ---
 

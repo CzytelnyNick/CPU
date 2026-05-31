@@ -163,6 +163,11 @@ architecture rtl of CPU is
     signal ctrl_INTA : std_logic;
     signal ctrl_MIO  : std_logic;
     signal ctrl_state_dbg : std_logic_vector(3 downto 0);
+    signal run_Smar : std_logic;
+    signal run_Smbr : std_logic;
+    signal run_WR   : std_logic;
+    signal run_RD   : std_logic;
+    signal run_MIO  : std_logic;
 
     -- ALU wspolne dla demo i procesora
     signal alu_BB : std_logic_vector(15 downto 0);
@@ -226,7 +231,12 @@ begin
 
     -- DI jest uzywane przez control do LDI/JMP/LOAD/STORE jako imm8.
     reg_DI <= signed(x"00" & std_logic_vector(reg_IR(7 downto 0)));
-    reg_BA <= bus_DI when ctrl_MIO = '1' else signed(alu_Y);
+    run_Smar <= ctrl_Smar when proc_mode = '1' else '0';
+    run_Smbr <= ctrl_Smbr when proc_mode = '1' else '0';
+    run_WR   <= ctrl_WR   when proc_mode = '1' else '0';
+    run_RD   <= ctrl_RD   when proc_mode = '1' else '0';
+    run_MIO  <= ctrl_MIO  when proc_mode = '1' else '0';
+    reg_BA <= bus_DI when run_MIO = '1' else signed(alu_Y);
 
     alu_BB <= std_logic_vector(reg_BB) when proc_mode = '1' else demo_BB;
     alu_BC <= std_logic_vector(reg_BC) when proc_mode = '1' else demo_BC;
@@ -313,10 +323,10 @@ begin
             clk           => clk,
             ADR           => reg_ADR,
             DO            => reg_BB,
-            Smar          => ctrl_Smar,
-            Smbr          => ctrl_Smbr,
-            WRin          => ctrl_WR,
-            RDin          => ctrl_RD,
+            Smar          => run_Smar,
+            Smbr          => run_Smbr,
+            WRin          => run_WR,
+            RDin          => run_RD,
             AD            => bus_AD,
             D             => bus_D,
             DI            => bus_DI,
@@ -357,7 +367,7 @@ begin
     LEDR(4) <= alu_op(4)  when proc_mode = '0' else ctrl_LDF;
     LEDR(5) <= SW(5)     when proc_mode = '0' else bus_RD;
     LEDR(6) <= SW(6)     when proc_mode = '0' else bus_WR;
-    LEDR(7) <= SW(7)     when proc_mode = '0' else ctrl_MIO;
+    LEDR(7) <= SW(7)     when proc_mode = '0' else run_MIO;
     LEDR(8) <= SW(8)     when proc_mode = '0' else ctrl_INTA;
     LEDR(9) <= proc_mode;
 

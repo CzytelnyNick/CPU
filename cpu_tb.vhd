@@ -34,9 +34,12 @@ architecture behavior of cpu_tb is
     signal HEX0, HEX1, HEX2, HEX3, HEX4, HEX5 : std_logic_vector(6 downto 0);
 
     constant SEG0 : std_logic_vector(6 downto 0) := "1000000";
+    constant SEG1 : std_logic_vector(6 downto 0) := "1111001";
+    constant SEG2 : std_logic_vector(6 downto 0) := "0100100";
     constant SEG4 : std_logic_vector(6 downto 0) := "0011001";
     constant SEG7 : std_logic_vector(6 downto 0) := "1111000";
     constant SEG9 : std_logic_vector(6 downto 0) := "0010000";
+    constant SEGF : std_logic_vector(6 downto 0) := "0001110";
 
 begin
 
@@ -95,6 +98,26 @@ begin
 
         chk_hex(HEX0, SEG7, "CPU IR low nibble po fetch = 7");
         chk_hex(HEX3, SEG4, "CPU IR high nibble po fetch = 4");
+
+        -- Dokoncz LDI rA, LDI rB, ADD, MUL, STORE i LOAD.
+        -- Po 28 taktach od resetu LOAD wpisal juz wynik z MEM[0x20] do DI/rC.
+        for i in 3 to 28 loop
+            tick;
+        end loop;
+        SW <= "1010000000"; -- SW9=1, SW[7:6]=10: podglad DI z pamieci
+        wait for 20 ns;
+        chk_hex(HEX0, SEG2, "CPU LOAD DI low nibble = 2");
+        chk_hex(HEX1, SEG1, "CPU LOAD DI high nibble = 1, czyli 0x0012");
+
+        -- Ostatnia instrukcja programu to HLT pod adresem 006.
+        SW <= "1000000000"; -- podglad IR
+        tick; -- fetch HLT
+        tick; -- IR <= 1F00
+        tick; -- decode -> halt
+        wait for 20 ns;
+        chk_hex(HEX3, SEG1, "CPU HLT IR high nibble = 1");
+        chk_hex(HEX2, SEGF, "CPU HLT IR nibble = F");
+        chk_hex(HEX5, SEGF, "CPU state halt = F na HEX5");
 
         if errcnt = 0 then
             report "=== CPU_TB: WSZYSTKIE TESTY PRZESZLY ===" severity note;
