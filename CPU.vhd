@@ -48,7 +48,11 @@ use ieee.numeric_std.all;
 --      KEY[0]: 1->0->1
 --   3. Oblicz rA + rB:
 --      SW = 0001010010  (DST=rA, WEN=0, Sbc=01=rB, Sbb=00=rA, S_ALU=0010=ADD)
---      HEX pokazuje wynik na biezaco bez wciskania KEY
+--      Kliknij KEY[0] - wynik operacji zostanie zatrzasniety i pojawi
+--      sie na HEX (operacja wykonuje sie na zboczu zegara).
+--
+-- WAZNE: wynik ALU pojawia sie na HEX DOPIERO po kliknieciu KEY[0].
+-- Sam wybor operacji przelacznikami nie zmienia jeszcze wyswietlacza.
 -- =============================================================
 
 entity CPU is
@@ -186,6 +190,14 @@ architecture rtl of CPU is
 
     -- flagi
     signal flags_nibble : std_logic_vector(3 downto 0);
+
+    -- rejestr wyniku (zatrzask na zboczu zegara - klikniecie KEY[0])
+    signal disp_Y  : std_logic_vector(15 downto 0) := (others => '0');
+    signal disp_C  : std_logic := '0';
+    signal disp_Z  : std_logic := '0';
+    signal disp_S  : std_logic := '0';
+    signal disp_P  : std_logic := '0';
+    signal disp_op : std_logic_vector(3 downto 0) := (others => '0');
 
 begin
 
@@ -326,36 +338,72 @@ begin
         );
 
     ----------------------------------------------------------------
-    -- FLAGI
+    -- REJESTR WYNIKU (synchroniczny) - operacja wykonuje sie na zboczu
+    -- zegara, czyli po kliknieciu KEY[0].
+    --
+    -- ALU liczy wynik kombinacyjnie, ale na HEX/LEDR pokazujemy go
+    -- DOPIERO po zatrzasnieciu w tym rejestrze. Dzieki temu nic nie
+    -- zmienia sie na wyswietlaczu, dopoki uzytkownik nie klika KEY[0].
+    -- Reset (KEY[1]) zeruje wyswietlany wynik.
+    --
+    -- Uwaga: zapis wyniku do rejestru docelowego (gdy WEN=1) nadal
+    -- korzysta z kombinacyjnego alu_Y i odbywa sie na tym SAMYM zboczu,
+    -- wiec jedno klikniecie naraz pokazuje wynik i (opcjonalnie) go
+    -- zapisuje - obie wartosci sa identyczne.
     ----------------------------------------------------------------
 
-    flags_nibble <= alu_C & alu_Z & alu_S & alu_P;
+    process (clk, reset)
+    begin
+        if reset = '1' then
+            disp_Y  <= (others => '0');
+            disp_C  <= '0';
+            disp_Z  <= '0';
+            disp_S  <= '0';
+            disp_P  <= '0';
+            disp_op <= (others => '0');
+        elsif rising_edge(clk) then
+            disp_Y  <= alu_Y;
+            disp_C  <= alu_C;
+            disp_Z  <= alu_Z;
+            disp_S  <= alu_S;
+            disp_P  <= alu_P;
+            disp_op <= SW(3 downto 0);
+        end if;
+    end process;
+
+    ----------------------------------------------------------------
+    -- FLAGI (zatrzasniete na zboczu zegara)
+    ----------------------------------------------------------------
+
+    flags_nibble <= disp_C & disp_Z & disp_S & disp_P;
 
     ----------------------------------------------------------------
     -- LED
+    --   LEDR[3:0] - flagi ostatnio wykonanej operacji (zatrzasniete)
+    --   LEDR[9:4] - biezacy stan przelacznikow (na zywo)
     ----------------------------------------------------------------
 
-    LEDR(0) <= alu_P;
-    LEDR(1) <= alu_S;
-    LEDR(2) <= alu_Z;
-    LEDR(3) <= alu_C;
+    LEDR(0) <= disp_P;
+    LEDR(1) <= disp_S;
+    LEDR(2) <= disp_Z;
+    LEDR(3) <= disp_C;
     LEDR(4) <= wen;
     LEDR(5) <= dst;
     LEDR(7 downto 6) <= s_sbb;
     LEDR(9 downto 8) <= s_sbc;
 
     ----------------------------------------------------------------
-    -- WYSWIETLACZE HEX
+    -- WYSWIETLACZE HEX (wynik zatrzasniety po kliknieciu KEY[0])
     -- HEX3..HEX0 - wynik ALU (16-bit)
     -- HEX4       - flagi {C,Z,S,P}
-    -- HEX5       - kod operacji S_ALU
+    -- HEX5       - kod ostatnio wykonanej operacji
     ----------------------------------------------------------------
 
-    U_HEX0 : hex_display port map (hex_in => alu_Y(3  downto 0),  seg_out => HEX0);
-    U_HEX1 : hex_display port map (hex_in => alu_Y(7  downto 4),  seg_out => HEX1);
-    U_HEX2 : hex_display port map (hex_in => alu_Y(11 downto 8),  seg_out => HEX2);
-    U_HEX3 : hex_display port map (hex_in => alu_Y(15 downto 12), seg_out => HEX3);
+    U_HEX0 : hex_display port map (hex_in => disp_Y(3  downto 0),  seg_out => HEX0);
+    U_HEX1 : hex_display port map (hex_in => disp_Y(7  downto 4),  seg_out => HEX1);
+    U_HEX2 : hex_display port map (hex_in => disp_Y(11 downto 8),  seg_out => HEX2);
+    U_HEX3 : hex_display port map (hex_in => disp_Y(15 downto 12), seg_out => HEX3);
     U_HEX4 : hex_display port map (hex_in => flags_nibble,         seg_out => HEX4);
-    U_HEX5 : hex_display port map (hex_in => SW(3 downto 0),       seg_out => HEX5);
+    U_HEX5 : hex_display port map (hex_in => disp_op,              seg_out => HEX5);
 
 end architecture rtl;
