@@ -4,9 +4,13 @@
 
 - Przełączniki SW: **w górę = 1, w dół = 0** (liczymy od prawej: SW0 = skrajny prawy)
 - KEY[0] = zegar — wciśnij i puść = 1 cykl zegarowy
-- KEY[1] = reset — wciśnij i puść = zeruje wszystkie rejestry
-- Wynik ALU widoczny na **HEX3..HEX0** w czasie rzeczywistym (bez klikania KEY)
-- **Zawsze sprawdź HEX przed kliknięciem KEY[0]** — na płytce nie ma cofnij
+- KEY[1] = reset — wciśnij i puść = zeruje wszystkie rejestry **oraz wyświetlany wynik**
+- **Wynik ALU pojawia się na HEX3..HEX0 dopiero PO kliknięciu KEY[0]** —
+  operacja jest wykonywana na zboczu zegara i zatrzaskiwana w rejestrze wyniku.
+  Sam wybór operacji przełącznikami nie zmienia jeszcze wyświetlacza.
+- Flagi na **LEDR[3:0]** również pokazują wynik OSTATNIO wykonanej (klikniętej)
+  operacji. LEDR[9:4] pokazują bieżący stan przełączników na żywo.
+- Aby zobaczyć wynik operacji: ustaw SW, **kliknij KEY[0]**, odczytaj HEX.
 
 ---
 
@@ -135,14 +139,15 @@ Klikaj KEY[0] **2 razy**:
 
 ---
 
-### Krok 6 — Podgląd ADD (nie klikaj KEY!)
+### Krok 6 — Oblicz ADD (kliknij KEY[0])
 
 ```
 SW9=0  SW8=0  SW7=0  SW6=1  SW5=0  SW4=0  SW3=0  SW2=0  SW1=1  SW0=0
 SW = 0001000010
 ```
 
-**Sprawdź HEX przed kliknięciem!**
+Ponieważ WEN=0 (SW[8]=0), kliknięcie tylko **wyświetli** wynik, bez zapisu
+do rejestru. Ustaw SW i **kliknij KEY[0]**, potem odczytaj HEX:
 
 - HEX = `0009` ✓ — kontynuuj
 - HEX ≠ `0009` — wróć do Kroku 1
@@ -167,7 +172,8 @@ KEY[0] wciśnij ↓ puść ↑
 ## Wszystkie operacje ALU na płytce
 
 Zakładamy że rA=7 i rB=2 są już wpisane (po teście dodawania).  
-Ustaw SW i **sprawdź HEX bez klikania KEY**. Jeśli chcesz zapisać wynik — ustaw SW[8]=1 i kliknij KEY[0].
+Ustaw SW, **kliknij KEY[0]** i odczytaj HEX (wynik zostaje zatrzaśnięty po kliknięciu).
+Przy WEN=0 (SW[8]=0) wynik jest tylko wyświetlany; aby go zapisać — ustaw SW[8]=1 i kliknij KEY[0].
 
 ---
 

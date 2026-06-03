@@ -15,6 +15,11 @@ use IEEE.NUMERIC_STD.ALL;
 -- Scenariusz: rA = 7, rB = 2, podglad ADD => HEX = 0009.
 -- Testbench jest samosprawdzajacy (assert) i na koncu wypisuje
 -- podsumowanie liczby bledow.
+--
+-- WAZNE: wynik ALU jest zatrzaskiwany w rejestrze wyniku na zboczu
+-- zegara (klikniecie KEY[0]). Dlatego KAZDE sprawdzenie HEX jest
+-- poprzedzone jednym impulsem zegara (tick), ktory zatrzaskuje wynik
+-- na wyswietlaczu - dokladnie tak jak na plytce.
 -- =============================================================
 
 entity cpu_tb is
@@ -121,8 +126,10 @@ begin
         end loop;
 
         -- Podglad rA (PASS BB, Sbb=rA, WEN=0): HEX0 powinno = 7
+        -- Wynik pojawia sie na HEX dopiero po zatrzasnieciu (tick).
         SW <= "0000000000";
         wait for 20 ns;
+        tick;                -- zatrzask wyniku na wyswietlacz
         chk_hex(HEX0, SEG7, "rA = 7 (HEX0)");
         chk_hex(HEX1, SEG0, "rA high nibble = 0 (HEX1)");
 
@@ -141,13 +148,17 @@ begin
         -- Podglad rB (PASS BB, Sbb=rB, WEN=0): HEX0 powinno = 2
         SW <= "0000010000";
         wait for 20 ns;
+        tick;                -- zatrzask wyniku na wyswietlacz
         chk_hex(HEX0, SEG2, "rB = 2 (HEX0)");
 
         ----------------------------------------------------------------
         -- Podglad ADD: rA + rB = 7 + 2 = 9 (bez zapisu)
+        -- WEN=0, wiec klikniecie tylko zatrzaskuje wynik na HEX,
+        -- nie zapisuje go do zadnego rejestru.
         ----------------------------------------------------------------
         SW <= "0001000010";  -- WEN=0, Sbc=rB, Sbb=rA, ALU=0010 (ADD)
         wait for 50 ns;
+        tick;                -- zatrzask wyniku na wyswietlacz
 
         chk_hex(HEX0, SEG9, "ADD wynik low nibble = 9 (HEX0)");
         chk_hex(HEX1, SEG0, "ADD wynik = 0009 (HEX1)");
@@ -165,10 +176,11 @@ begin
         ----------------------------------------------------------------
         SW <= "0101000010";  -- WEN=1, DST=rA, Sbc=rB, Sbb=rA, ALU=ADD
         wait for 10 ns;
-        tick;                -- rA <- 9
+        tick;                -- rA <- 9 (zapis) i zatrzask wyniku na HEX
 
         SW <= "0000000000";  -- podglad rA (PASS BB)
         wait for 20 ns;
+        tick;                -- zatrzask wyniku na wyswietlacz
         chk_hex(HEX0, SEG9, "rA po zapisie = 9 (HEX0)");
 
         ----------------------------------------------------------------
