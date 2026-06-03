@@ -8,9 +8,12 @@
 #   3. W oknie Transcript wpisz:
 #        do run_tests.do
 #
-# Skrypt kompiluje caly projekt i uruchamia po kolei oba testbenche:
-#   - alu_tb  (test jednostkowy ALU: wszystkie operacje + flagi)
-#   - cpu_tb  (test end-to-end: rA=7, rB=2, ADD => 0009)
+# Skrypt kompiluje caly projekt i uruchamia po kolei testbenche:
+#   - alu_tb     (test jednostkowy ALU: wszystkie operacje + flagi)
+#   - ram_tb     (test jednostkowy pamieci RAM: zapis/odczyt/we)
+#   - busint_tb  (test jednostkowy ukladu wspolpracy z pamiecia: MAR/MBR,
+#                 adres fizyczny, szyna D, WR/RD)
+#   - cpu_tb     (test end-to-end: rA=7, rB=2, ADD => 0009)
 #
 # Wynik: w Transcripcie szukaj linii "WSZYSTKIE TESTY PRZESZLY".
 # Kazdy blad jest raportowany jako "FAIL [...]".
@@ -33,6 +36,8 @@ vcom -93 -work work CPU.vhd
 
 # Kompilacja testbenchy
 vcom -93 -work work alu_tb.vhd
+vcom -93 -work work ram_tb.vhd
+vcom -93 -work work busint_tb.vhd
 vcom -93 -work work cpu_tb.vhd
 
 # ---------------- TEST 1: ALU ----------------
@@ -43,7 +48,23 @@ vsim -voptargs="+acc" work.alu_tb
 add wave -r /*
 run -all
 
-# ---------------- TEST 2: CPU (end-to-end) ----------------
+# ---------------- TEST 2: RAM (jednostkowy) ----------------
+echo "========================================="
+echo " URUCHAMIAM ram_tb"
+echo "========================================="
+vsim -voptargs="+acc" work.ram_tb
+add wave -r /*
+run -all
+
+# ---------------- TEST 3: busint (jednostka sterujaca pamiecia) ----------------
+echo "========================================="
+echo " URUCHAMIAM busint_tb"
+echo "========================================="
+vsim -voptargs="+acc" work.busint_tb
+add wave -r /*
+run -all
+
+# ---------------- TEST 4: CPU (end-to-end) ----------------
 echo "========================================="
 echo " URUCHAMIAM cpu_tb"
 echo "========================================="
