@@ -3,40 +3,46 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 -- =============================================================
--- LAB 1: Jednostka Arytmetyczno-Logiczna (ALU) - 16-bit
+-- Jednostka Arytmetyczno-Logiczna (ALU) - 16-bit
 --
 -- Wejscia:
---   clk   - zegar systemowy
---   BB    - argument 1 (16-bit), z szyny B pliku rejestrow
---   BC    - argument 2 (16-bit), z szyny C pliku rejestrow
---   S_ALU - kod operacji (4-bit)
+--   clk   - zegar systemowy (zostawiony dla zgodnosci komponentu)
+--   BB    - argument 1 (16-bit)
+--   BC    - argument 2 (16-bit)
+--   S_ALU - kod operacji (5-bit, 0..21)
 --   S_F   - wybor wyjscia: 0=wynik operacji, 1=flagi
---   C_in  - przeniesienie wejsciowe (dla ADC/SBB)
+--   C_in  - przeniesienie wejsciowe
 --
 -- Wyjscia:
---   Y     - wynik operacji (16-bit)
---   C     - flaga przeniesienia (Carry)
---   Z     - flaga zera (Zero)
---   S     - flaga znaku (Sign)
---   P     - flaga parzystosci (Parity, even)
+--   Y     - wynik operacji (16-bit) albo flagi gdy S_F=1
+--   C     - flaga przeniesienia/pozyczki/bledu dzielenia
+--   Z     - flaga zera
+--   S     - flaga znaku
+--   P     - flaga parzystosci (even parity)
 --
 -- Tabela kodow operacji S_ALU:
---   0000 - PASS BB   przepisanie BB na wyjscie
---   0001 - PASS BC   przepisanie BC na wyjscie
---   0010 - ADD       BB + BC
---   0011 - SUB       BB - BC
---   0100 - OR        BB or BC
---   0101 - AND       BB and BC
---   0110 - XOR       BB xor BC
---   0111 - XNOR      BB xnor BC (rownowaznos)
---   1000 - NOT       not BB
---   1001 - NEG       dopelnienie do 2 z BB (-BB)
---   1010 - CLR       zerowanie wyjscia
---   1011 - ADC       BB + BC + C_in
---   1100 - SBB       BB - BC - C_in
---   1101 - INC       BB + 1
---   1110 - SHL       przesuniecie logiczne w lewo o 1
---   1111 - SHR       przesuniecie logiczne w prawo o 1
+--   00000 - ADD       BB + BC
+--   00001 - SUB       BB - BC
+--   00010 - MUL       BB * BC, dolne 16 bitow
+--   00011 - DIV       BB / BC, gdy BC=0 wynik=0 i C=1
+--   00100 - MOD       BB mod BC, gdy BC=0 wynik=0 i C=1
+--   00101 - INC       BB + 1
+--   00110 - DEC       BB - 1
+--   00111 - NEG       -BB
+--   01000 - AND       BB and BC
+--   01001 - OR        BB or BC
+--   01010 - XOR       BB xor BC
+--   01011 - NOT       not BB
+--   01100 - NAND      not (BB and BC)
+--   01101 - NOR       not (BB or BC)
+--   01110 - SHL       przesuniecie logiczne w lewo o 1
+--   01111 - SHR       przesuniecie logiczne w prawo o 1
+--   10000 - SAR       przesuniecie arytmetyczne w prawo o 1
+--   10001 - ROL       rotacja w lewo o 1
+--   10010 - ROR       rotacja w prawo o 1
+--   10011 - CMP_EQ    1 gdy BB = BC, inaczej 0
+--   10100 - CMP_LT    1 gdy signed(BB) < signed(BC), inaczej 0
+--   10101 - CMP_GT    1 gdy signed(BB) > signed(BC), inaczej 0
 -- =============================================================
 
 entity alu is
@@ -44,7 +50,7 @@ entity alu is
         clk   : in  STD_LOGIC;
         BB    : in  STD_LOGIC_VECTOR(15 downto 0);
         BC    : in  STD_LOGIC_VECTOR(15 downto 0);
-        S_ALU : in  STD_LOGIC_VECTOR(3 downto 0);
+        S_ALU : in  STD_LOGIC_VECTOR(4 downto 0);
         S_F   : in  STD_LOGIC;
         C_in  : in  STD_LOGIC;
         Y     : out STD_LOGIC_VECTOR(15 downto 0);
@@ -67,38 +73,29 @@ architecture Behavioral of alu is
 
 begin
 
-    -- --------------------------------------------------------
-    -- Proces kombinacyjny: obliczenie wyniku
-    -- Wyzwalany zmiana wejsc (asynchroniczny)
-    -- --------------------------------------------------------
     process(BB, BC, S_ALU, C_in)
         variable v_BB   : unsigned(15 downto 0);
         variable v_BC   : unsigned(15 downto 0);
         variable v_sum  : unsigned(16 downto 0);
+        variable v_mul  : unsigned(31 downto 0);
         variable v_res  : STD_LOGIC_VECTOR(15 downto 0);
         variable v_cout : STD_LOGIC;
     begin
         v_BB   := unsigned(BB);
         v_BC   := unsigned(BC);
+        v_sum  := (others => '0');
+        v_mul  := (others => '0');
         v_res  := (others => '0');
         v_cout := '0';
 
         case S_ALU is
 
-            when "0000" =>                          -- PASS BB
-                v_res  := BB;
-                v_cout := '0';
-
-            when "0001" =>                          -- PASS BC
-                v_res  := BC;
-                v_cout := '0';
-
-            when "0010" =>                          -- ADD
+            when "00000" =>                          -- ADD
                 v_sum  := ('0' & v_BB) + ('0' & v_BC);
                 v_res  := STD_LOGIC_VECTOR(v_sum(15 downto 0));
                 v_cout := v_sum(16);
 
-            when "0011" =>                          -- SUB
+            when "00001" =>                          -- SUB
                 v_sum  := ('0' & v_BB) - ('0' & v_BC);
                 v_res  := STD_LOGIC_VECTOR(v_sum(15 downto 0));
                 if v_BB < v_BC then
@@ -107,61 +104,124 @@ begin
                     v_cout := '0';
                 end if;
 
-            when "0100" =>                          -- OR
-                v_res  := BB or BC;
-                v_cout := '0';
-
-            when "0101" =>                          -- AND
-                v_res  := BB and BC;
-                v_cout := '0';
-
-            when "0110" =>                          -- XOR
-                v_res  := BB xor BC;
-                v_cout := '0';
-
-            when "0111" =>                          -- XNOR
-                v_res  := BB xnor BC;
-                v_cout := '0';
-
-            when "1000" =>                          -- NOT
-                v_res  := not BB;
-                v_cout := '0';
-
-            when "1001" =>                          -- NEG
-                v_sum  := ('0' & (not v_BB)) + 1;
-                v_res  := STD_LOGIC_VECTOR(v_sum(15 downto 0));
-                v_cout := v_sum(16);
-
-            when "1010" =>                          -- CLR
-                v_res  := (others => '0');
-                v_cout := '0';
-
-            when "1011" =>                          -- ADC
-                v_sum  := ('0' & v_BB) + ('0' & v_BC) + (x"0000" & C_in);
-                v_res  := STD_LOGIC_VECTOR(v_sum(15 downto 0));
-                v_cout := v_sum(16);
-
-            when "1100" =>                          -- SBB
-                v_sum  := ('0' & v_BB) - ('0' & v_BC) - (x"0000" & C_in);
-                v_res  := STD_LOGIC_VECTOR(v_sum(15 downto 0));
-                if v_BB < (v_BC + ("000000000000000" & C_in)) then
+            when "00010" =>                          -- MUL
+                v_mul  := v_BB * v_BC;
+                v_res  := STD_LOGIC_VECTOR(v_mul(15 downto 0));
+                if v_mul(31 downto 16) /= to_unsigned(0, 16) then
                     v_cout := '1';
                 else
                     v_cout := '0';
                 end if;
 
-            when "1101" =>                          -- INC
+            when "00011" =>                          -- DIV
+                if v_BC = to_unsigned(0, 16) then
+                    v_res  := (others => '0');
+                    v_cout := '1';
+                else
+                    v_res  := STD_LOGIC_VECTOR(v_BB / v_BC);
+                    v_cout := '0';
+                end if;
+
+            when "00100" =>                          -- MOD
+                if v_BC = to_unsigned(0, 16) then
+                    v_res  := (others => '0');
+                    v_cout := '1';
+                else
+                    v_res  := STD_LOGIC_VECTOR(v_BB mod v_BC);
+                    v_cout := '0';
+                end if;
+
+            when "00101" =>                          -- INC
                 v_sum  := ('0' & v_BB) + 1;
                 v_res  := STD_LOGIC_VECTOR(v_sum(15 downto 0));
                 v_cout := v_sum(16);
 
-            when "1110" =>                          -- SHL
+            when "00110" =>                          -- DEC
+                if v_BB = to_unsigned(0, 16) then
+                    v_res  := x"FFFF";
+                    v_cout := '1';
+                else
+                    v_sum  := ('0' & v_BB) - 1;
+                    v_res  := STD_LOGIC_VECTOR(v_sum(15 downto 0));
+                    v_cout := '0';
+                end if;
+
+            when "00111" =>                          -- NEG
+                v_sum  := ('0' & (not v_BB)) + 1;
+                v_res  := STD_LOGIC_VECTOR(v_sum(15 downto 0));
+                if v_BB = to_unsigned(0, 16) then
+                    v_cout := '0';
+                else
+                    v_cout := '1';
+                end if;
+
+            when "01000" =>                          -- AND
+                v_res  := BB and BC;
+                v_cout := '0';
+
+            when "01001" =>                          -- OR
+                v_res  := BB or BC;
+                v_cout := '0';
+
+            when "01010" =>                          -- XOR
+                v_res  := BB xor BC;
+                v_cout := '0';
+
+            when "01011" =>                          -- NOT
+                v_res  := not BB;
+                v_cout := '0';
+
+            when "01100" =>                          -- NAND
+                v_res  := not (BB and BC);
+                v_cout := '0';
+
+            when "01101" =>                          -- NOR
+                v_res  := not (BB or BC);
+                v_cout := '0';
+
+            when "01110" =>                          -- SHL
                 v_res  := BB(14 downto 0) & '0';
                 v_cout := BB(15);
 
-            when "1111" =>                          -- SHR
+            when "01111" =>                          -- SHR
                 v_res  := '0' & BB(15 downto 1);
                 v_cout := BB(0);
+
+            when "10000" =>                          -- SAR
+                v_res  := BB(15) & BB(15 downto 1);
+                v_cout := BB(0);
+
+            when "10001" =>                          -- ROL
+                v_res  := BB(14 downto 0) & BB(15);
+                v_cout := BB(15);
+
+            when "10010" =>                          -- ROR
+                v_res  := BB(0) & BB(15 downto 1);
+                v_cout := BB(0);
+
+            when "10011" =>                          -- CMP_EQ
+                if BB = BC then
+                    v_res := x"0001";
+                else
+                    v_res := x"0000";
+                end if;
+                v_cout := '0';
+
+            when "10100" =>                          -- CMP_LT
+                if signed(BB) < signed(BC) then
+                    v_res := x"0001";
+                else
+                    v_res := x"0000";
+                end if;
+                v_cout := '0';
+
+            when "10101" =>                          -- CMP_GT
+                if signed(BB) > signed(BC) then
+                    v_res := x"0001";
+                else
+                    v_res := x"0000";
+                end if;
+                v_cout := '0';
 
             when others =>
                 v_res  := (others => '0');
@@ -172,10 +232,6 @@ begin
         result    <= v_res;
         carry_out <= v_cout;
     end process;
-
-    -- --------------------------------------------------------
-    -- Generowanie flag (kombinacyjne)
-    -- --------------------------------------------------------
 
     flag_Z <= '1' when result = x"0000" else '0';
     flag_S <= result(15);
