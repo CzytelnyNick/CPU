@@ -3,6 +3,10 @@ K4
 z2
 Z0 !s99 nomlopt
 R0
+R0
+R0
+R0
+R0
 !s11e vcom 2021.2 2021.04, Apr 14 2021
 13
 !s112 1.1
@@ -18,262 +22,103 @@ VKbe_VD@oFj@JLjkCL6IH03
 =1-a029427a4fea-6a1b6f31-146-11dc
 !s124 OEM10U11 
 o-quiet -auto_acc_if_foreign -work work
-tCvgOpt 0
+Z2 tCvgOpt 0
 n@_opt
-OL;O;2021.2;73
+Z3 OL;O;2021.2;73
+R1
+T_opt1
+!s110 1780789324
+VIZPAKLPlMf_Jan@HimS<c1
+04 6 8 work alu_tb behavior 1
+=1-a029427a4fea-6a24b04b-329-71dc
+!s124 OEM10U2 
+o-quiet -auto_acc_if_foreign -work work +acc
+R2
+n@_opt1
+R3
 Ealu
-Z2 w1780170536
-Z3 DPx4 ieee 11 numeric_std 0 22 aU^R8eGcicLcUFIaBQSL>3
-Z4 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
-Z5 DPx4 ieee 14 std_logic_1164 0 22 cVAk:aDinOX8^VGI1ekP<3
-!i122 1
+Z4 w1780786816
+Z5 DPx4 ieee 11 numeric_std 0 22 aU^R8eGcicLcUFIaBQSL>3
+Z6 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
+Z7 DPx4 ieee 14 std_logic_1164 0 22 cVAk:aDinOX8^VGI1ekP<3
+!i122 0
 R1
-Z6 8alu.vhd
-Z7 Falu.vhd
+Z8 8alu.vhd
+Z9 Falu.vhd
 l0
-L42 1
-Vo^VV@=0=22_9=gT4If8?j0
-!s100 kSTEnQoIE03]ag6X=mTz;3
-Z8 OL;C;2021.2;73
+L10 1
+VVLfIndTZklnooRbAWZkEH1
+!s100 _IHgc;EVod;D9>3jTC_2R1
+Z10 OL;C;2021.2;73
 31
-Z9 !s110 1780182832
+Z11 !s110 1780789323
 !i10b 1
-Z10 !s108 1780182832.000000
-Z11 !s90 -reportprogress|300|-93|hex_display.vhd|alu.vhd|busint.vhd|ram.vhd|register_cpu.vhd|CPU.vhd|
-Z12 !s107 CPU.vhd|register_cpu.vhd|ram.vhd|busint.vhd|alu.vhd|hex_display.vhd|
+Z12 !s108 1780789323.000000
+Z13 !s90 -reportprogress|300|-93|-work|work|alu.vhd|
+Z14 !s107 alu.vhd|
 !i113 0
-o-93
-Z13 tExplicit 1 CvgOpt 0
+Z15 o-93 -work work
+Z16 tExplicit 1 CvgOpt 0
 Abehavioral
-R3
-R4
 R5
-DEx4 work 3 alu 0 22 o^VV@=0=22_9=gT4If8?j0
-!i122 1
-l68
-L58 141
-Vg5=Do;UVIZTH:9HU[f4^32
-!s100 ZeZ14WUh61@2@Oz__cL^[3
-R8
-31
-R9
-!i10b 1
+R6
+R7
+DEx4 work 3 alu 0 22 VLfIndTZklnooRbAWZkEH1
+!i122 0
+l36
+L26 124
+VDEfgliC@PgJRg[7gIY@oC1
+!s100 n:@?4GXOnHNV?@O3?L4Nk0
 R10
-R11
-R12
-!i113 0
-o-93
-R13
-Ebusint
-Z14 w1780170514
-R3
-R4
-R5
-!i122 1
-R1
-Z15 8busint.vhd
-Z16 Fbusint.vhd
-l0
-L36 1
-VJZW9bAIQeT:D@:0?iAIZz1
-!s100 fP4;L6ad0?W_13I1WneW11
-R8
 31
-R9
-!i10b 1
-R10
 R11
-R12
-!i113 0
-o-93
-R13
-Artl
-R3
-R4
-R5
-DEx4 work 6 busint 0 22 JZW9bAIQeT:D@:0?iAIZz1
-!i122 1
-l58
-L54 51
-V9S4TDa5oFJa]LiKQbE>Le2
-!s100 WVEYYh;?AM4E9U_1?X@ai3
-R8
-31
-R9
 !i10b 1
-R10
-R11
 R12
-!i113 0
-o-93
 R13
-Ecpu
-Z17 w1780170593
-R3
-R4
+R14
+!i113 0
+R15
+R16
+Ealu_tb
+Z17 w1780786852
 R5
+R6
+R7
 !i122 1
 R1
-Z18 8CPU.vhd
-Z19 FCPU.vhd
+Z18 8alu_tb.vhd
+Z19 Falu_tb.vhd
 l0
-L54 1
-VC[if4U>MiO@ML3gE`X9:V0
-!s100 4Qi49e7^KV7SZQUXl_m>X2
-R8
-31
-R9
-!i10b 1
+L5 1
+VI5Lih>R5N>zC0USWVcnNL1
+!s100 6_0SVhHGel^NM5k3]@7;N2
 R10
+31
 R11
+!i10b 1
 R12
+Z20 !s90 -reportprogress|300|-93|-work|work|alu_tb.vhd|
+Z21 !s107 alu_tb.vhd|
 !i113 0
-o-93
-R13
-Artl
-R3
-R4
+R15
+R16
+Abehavior
 R5
-DEx4 work 3 cpu 0 22 C[if4U>MiO@ML3gE`X9:V0
+R6
+R7
+DEx4 work 6 alu_tb 0 22 I5Lih>R5N>zC0USWVcnNL1
 !i122 1
-l190
-L68 294
-VA2l54K@Mo5:FW?E_R7DPe0
-!s100 ag`NhZ<?06KYNNKXKgU[C1
-R8
-31
-R9
-!i10b 1
+l29
+L8 83
+VYNoRZ4f1Xf2U4zKgZ;LHf1
+!s100 DCOX;1aSH5zF9==4W3ch13
 R10
-R11
-R12
-!i113 0
-o-93
-R13
-Ehex_display
-Z20 w1780170503
-R4
-R5
-!i122 1
-R1
-Z21 8hex_display.vhd
-Z22 Fhex_display.vhd
-l0
-L23 1
-V4<jA=m[V_E7Qhlm[:aa;61
-!s100 Y6YD^HJGQm_J1YfEXz<e83
-R8
 31
-R9
-!i10b 1
-R10
 R11
-R12
-!i113 0
-o-93
-R13
-Artl
-R4
-R5
-DEx4 work 11 hex_display 0 22 4<jA=m[V_E7Qhlm[:aa;61
-!i122 1
-l31
-L30 26
-VKY8:_2<Wm?lU4`795Ee4[3
-!s100 k7kWjY^VOBD2gG6PYAaW^2
-R8
-31
-R9
 !i10b 1
-R10
-R11
 R12
+R20
+R21
 !i113 0
-o-93
-R13
-Eram
-Z23 w1779123824
-R3
-R4
-R5
-!i122 1
-R1
-Z24 8ram.vhd
-Z25 Fram.vhd
-l0
-L33 1
-VTfKRWbeQLeQE0mL96k>J`0
-!s100 ]^BkTgUm:2=FN@M_Rc^8@0
-R8
-31
-R9
-!i10b 1
-R10
-R11
-R12
-!i113 0
-o-93
-R13
-Artl
-R3
-R4
-R5
-DEx4 work 3 ram 0 22 TfKRWbeQLeQE0mL96k>J`0
-!i122 1
-l52
-L43 24
-VA]M3j7eAi6jm^j;WA4R@L0
-!s100 @]P@_Si]9;gS25lj^k:i^0
-R8
-31
-R9
-!i10b 1
-R10
-R11
-R12
-!i113 0
-o-93
-R13
-Eregister_cpu
-Z26 w1780171006
-R3
-R4
-R5
-!i122 1
-R1
-Z27 8register_cpu.vhd
-Z28 Fregister_cpu.vhd
-l0
-L48 1
-VX_@X64PH0LekBWP4[X_Ze3
-!s100 Z=H9m;^E>Fb>2N>Ha>fEL0
-R8
-31
-R9
-!i10b 1
-R10
-R11
-R12
-!i113 0
-o-93
-R13
-Artl
-R3
-R4
-R5
-DEx4 work 12 register_cpu 0 22 X_@X64PH0LekBWP4[X_Ze3
-!i122 1
-l67
-L66 133
-V4iD^b@;:JVW36iaAN8GRj1
-!s100 ?6JhAT8gk0TJdf:4zI__[2
-R8
-31
-R9
-!i10b 1
-R10
-R11
-R12
-!i113 0
-o-93
-R13
+R15
+R16

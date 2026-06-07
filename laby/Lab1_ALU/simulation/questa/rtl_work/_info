@@ -1,0 +1,108 @@
+m255
+K4
+z2
+!s99 nomlopt
+!s11e vcom 2021.2 2021.04, Apr 14 2021
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dC:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/laby/Lab1_ALU/simulation/questa
+T_opt
+!s110 1780792822
+V7FBVU:fibZ>A9`ZSGUS=`3
+04 6 8 work alu_tb behavior 1
+=2-a029427a4fea-6a24bdf6-110-4a64
+!s124 OEM10U2 
+o-quiet -auto_acc_if_foreign -work rtl_work
+tCvgOpt 0
+n@_opt
+OL;O;2021.2;73
+Ealu
+Z1 w1780786816
+Z2 DPx4 ieee 11 numeric_std 0 22 aU^R8eGcicLcUFIaBQSL>3
+Z3 DPx3 std 6 textio 0 22 zE1`LPoLg^DX3Oz^4Fj1K3
+Z4 DPx4 ieee 14 std_logic_1164 0 22 cVAk:aDinOX8^VGI1ekP<3
+!i122 0
+R0
+Z5 8C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/laby/Lab1_ALU/alu.vhd
+Z6 FC:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/laby/Lab1_ALU/alu.vhd
+l0
+L10 1
+VVLfIndTZklnooRbAWZkEH1
+!s100 _IHgc;EVod;D9>3jTC_2R1
+Z7 OL;C;2021.2;73
+31
+Z8 !s110 1780792811
+!i10b 1
+Z9 !s108 1780792811.000000
+Z10 !s90 -reportprogress|300|-93|-work|work|C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/laby/Lab1_ALU/alu.vhd|
+Z11 !s107 C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/laby/Lab1_ALU/alu.vhd|
+!i113 0
+Z12 o-93 -work work
+Z13 tExplicit 1 CvgOpt 0
+Abehavioral
+R2
+R3
+R4
+DEx4 work 3 alu 0 22 VLfIndTZklnooRbAWZkEH1
+!i122 0
+l36
+L26 124
+VDEfgliC@PgJRg[7gIY@oC1
+!s100 n:@?4GXOnHNV?@O3?L4Nk0
+R7
+31
+R8
+!i10b 1
+R9
+R10
+R11
+!i113 0
+R12
+R13
+Ealu_tb
+Z14 w1780786852
+R2
+R3
+R4
+!i122 1
+R0
+Z15 8C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/laby/Lab1_ALU/alu_tb.vhd
+Z16 FC:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/laby/Lab1_ALU/alu_tb.vhd
+l0
+L5 1
+VI5Lih>R5N>zC0USWVcnNL1
+!s100 6_0SVhHGel^NM5k3]@7;N2
+R7
+31
+R8
+!i10b 1
+R9
+Z17 !s90 -reportprogress|300|-93|-work|work|C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/laby/Lab1_ALU/alu_tb.vhd|
+Z18 !s107 C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/laby/Lab1_ALU/alu_tb.vhd|
+!i113 0
+R12
+R13
+Abehavior
+R2
+R3
+R4
+DEx4 work 6 alu_tb 0 22 I5Lih>R5N>zC0USWVcnNL1
+!i122 1
+l29
+L8 83
+VYNoRZ4f1Xf2U4zKgZ;LHf1
+!s100 DCOX;1aSH5zF9==4W3ch13
+R7
+31
+R8
+!i10b 1
+R9
+R17
+R18
+!i113 0
+R12
+R13

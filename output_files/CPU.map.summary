@@ -1,10 +1,10 @@
-Analysis & Synthesis Status : Successful - Sun May 31 00:34:21 2026
+Analysis & Synthesis Status : Successful - Sun Jun  7 01:09:10 2026
 Quartus Prime Version : 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
 Revision Name : CPU
 Top-level Entity Name : CPU
 Family : Cyclone V
 Logic utilization (in ALMs) : N/A
-Total registers : 32
+Total registers : 16846
 Total pins : 64
 Total virtual pins : 0
 Total block memory bits : 0

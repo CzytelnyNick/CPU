@@ -1,5 +1,5 @@
 Analysis & Synthesis report for CPU
-Sun May 31 00:34:21 2026
+Sun Jun  7 01:09:10 2026
 Quartus Prime Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
 
 
@@ -13,17 +13,18 @@ Quartus Prime Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
   5. Analysis & Synthesis Source Files Read
   6. Analysis & Synthesis Resource Usage Summary
   7. Analysis & Synthesis Resource Utilization by Entity
-  8. Registers Removed During Synthesis
-  9. Removed Registers Triggering Further Register Optimizations
- 10. General Register Statistics
- 11. Multiplexer Restructuring Statistics (Restructuring Performed)
- 12. Port Connectivity Checks: "ram:U_RAM"
+  8. State Machine - |CPU|control:U_CONTROL|state
+  9. Logic Cells Representing Combinational Loops
+ 10. Registers Removed During Synthesis
+ 11. General Register Statistics
+ 12. Multiplexer Restructuring Statistics (Restructuring Performed)
  13. Port Connectivity Checks: "busint:U_BUSINT"
  14. Port Connectivity Checks: "alu:U_ALU"
  15. Port Connectivity Checks: "register_cpu:U_REGS"
- 16. Post-Synthesis Netlist Statistics for Top Partition
- 17. Elapsed Time Per Partition
- 18. Analysis & Synthesis Messages
+ 16. Port Connectivity Checks: "control:U_CONTROL"
+ 17. Post-Synthesis Netlist Statistics for Top Partition
+ 18. Elapsed Time Per Partition
+ 19. Analysis & Synthesis Messages
 
 
 
@@ -50,13 +51,13 @@ on the Quartus Prime software download page.
 +-----------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                      ;
 +---------------------------------+-------------------------------------------------+
-; Analysis & Synthesis Status     ; Successful - Sun May 31 00:34:21 2026           ;
+; Analysis & Synthesis Status     ; Successful - Sun Jun  7 01:09:10 2026           ;
 ; Quartus Prime Version           ; 24.1std.0 Build 1077 03/04/2025 SC Lite Edition ;
 ; Revision Name                   ; CPU                                             ;
 ; Top-level Entity Name           ; CPU                                             ;
 ; Family                          ; Cyclone V                                       ;
 ; Logic utilization (in ALMs)     ; N/A                                             ;
-; Total registers                 ; 32                                              ;
+; Total registers                 ; 16846                                           ;
 ; Total pins                      ; 64                                              ;
 ; Total virtual pins              ; 0                                               ;
 ; Total block memory bits         ; 0                                               ;
@@ -165,12 +166,16 @@ on the Quartus Prime software download page.
 ; Number detected on machine ; 12          ;
 ; Maximum allowed            ; 6           ;
 ;                            ;             ;
-; Average used               ; 1.00        ;
+; Average used               ; 1.01        ;
 ; Maximum used               ; 6           ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processors 2-6         ;   0.0%      ;
+;     Processor 2            ;   0.2%      ;
+;     Processor 3            ;   0.2%      ;
+;     Processor 4            ;   0.2%      ;
+;     Processor 5            ;   0.2%      ;
+;     Processor 6            ;   0.2%      ;
 +----------------------------+-------------+
 
 
@@ -185,34 +190,35 @@ on the Quartus Prime software download page.
 ; ram.vhd                          ; yes             ; User VHDL File  ; C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd          ;         ;
 ; register_cpu.vhd                 ; yes             ; User VHDL File  ; C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/register_cpu.vhd ;         ;
 ; CPU.vhd                          ; yes             ; User VHDL File  ; C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd          ;         ;
+; control.vhd                      ; yes             ; User VHDL File  ; C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/control.vhd      ;         ;
 +----------------------------------+-----------------+-----------------+----------------------------------------------------------------+---------+
 
 
-+-----------------------------------------------------------+
-; Analysis & Synthesis Resource Usage Summary               ;
-+---------------------------------------------+-------------+
-; Resource                                    ; Usage       ;
-+---------------------------------------------+-------------+
-; Estimate of Logic utilization (ALMs needed) ; 175         ;
-;                                             ;             ;
-; Combinational ALUT usage for logic          ; 295         ;
-;     -- 7 input functions                    ; 20          ;
-;     -- 6 input functions                    ; 33          ;
-;     -- 5 input functions                    ; 84          ;
-;     -- 4 input functions                    ; 112         ;
-;     -- <=3 input functions                  ; 46          ;
-;                                             ;             ;
-; Dedicated logic registers                   ; 32          ;
-;                                             ;             ;
-; I/O pins                                    ; 64          ;
-;                                             ;             ;
-; Total DSP Blocks                            ; 0           ;
-;                                             ;             ;
-; Maximum fan-out node                        ; SW[4]~input ;
-; Maximum fan-out                             ; 80          ;
-; Total fan-out                               ; 1607        ;
-; Average fan-out                             ; 3.53        ;
-+---------------------------------------------+-------------+
++------------------------------------------------------------+
+; Analysis & Synthesis Resource Usage Summary                ;
++---------------------------------------------+--------------+
+; Resource                                    ; Usage        ;
++---------------------------------------------+--------------+
+; Estimate of Logic utilization (ALMs needed) ; 11621        ;
+;                                             ;              ;
+; Combinational ALUT usage for logic          ; 7371         ;
+;     -- 7 input functions                    ; 1            ;
+;     -- 6 input functions                    ; 5915         ;
+;     -- 5 input functions                    ; 60           ;
+;     -- 4 input functions                    ; 102          ;
+;     -- <=3 input functions                  ; 1293         ;
+;                                             ;              ;
+; Dedicated logic registers                   ; 16846        ;
+;                                             ;              ;
+; I/O pins                                    ; 64           ;
+;                                             ;              ;
+; Total DSP Blocks                            ; 0            ;
+;                                             ;              ;
+; Maximum fan-out node                        ; KEY[0]~input ;
+; Maximum fan-out                             ; 16846        ;
+; Total fan-out                               ; 91018        ;
+; Average fan-out                             ; 3.74         ;
++---------------------------------------------+--------------+
 
 
 +----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -220,82 +226,65 @@ on the Quartus Prime software download page.
 +----------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------+--------------+--------------+
 ; Compilation Hierarchy Node ; Combinational ALUTs ; Dedicated Logic Registers ; Block Memory Bits ; DSP Blocks ; Pins ; Virtual Pins ; Full Hierarchy Name      ; Entity Name  ; Library Name ;
 +----------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------+--------------+--------------+
-; |CPU                       ; 295 (2)             ; 32 (0)                    ; 0                 ; 0          ; 64   ; 0            ; |CPU                     ; CPU          ; work         ;
-;    |alu:U_ALU|             ; 219 (219)           ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |CPU|alu:U_ALU           ; alu          ; work         ;
+; |CPU                       ; 7371 (49)           ; 16846 (0)                 ; 0                 ; 0          ; 64   ; 0            ; |CPU                     ; CPU          ; work         ;
+;    |alu:U_ALU|             ; 270 (270)           ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |CPU|alu:U_ALU           ; alu          ; work         ;
+;    |busint:U_BUSINT|       ; 0 (0)               ; 32 (32)                   ; 0                 ; 0          ; 0    ; 0            ; |CPU|busint:U_BUSINT     ; busint       ; work         ;
+;    |control:U_CONTROL|     ; 53 (53)             ; 14 (14)                   ; 0                 ; 0          ; 0    ; 0            ; |CPU|control:U_CONTROL   ; control      ; work         ;
 ;    |hex_display:U_HEX0|    ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |CPU|hex_display:U_HEX0  ; hex_display  ; work         ;
 ;    |hex_display:U_HEX1|    ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |CPU|hex_display:U_HEX1  ; hex_display  ; work         ;
 ;    |hex_display:U_HEX2|    ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |CPU|hex_display:U_HEX2  ; hex_display  ; work         ;
 ;    |hex_display:U_HEX3|    ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |CPU|hex_display:U_HEX3  ; hex_display  ; work         ;
 ;    |hex_display:U_HEX4|    ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |CPU|hex_display:U_HEX4  ; hex_display  ; work         ;
 ;    |hex_display:U_HEX5|    ; 7 (7)               ; 0 (0)                     ; 0                 ; 0          ; 0    ; 0            ; |CPU|hex_display:U_HEX5  ; hex_display  ; work         ;
-;    |register_cpu:U_REGS|   ; 32 (32)             ; 32 (32)                   ; 0                 ; 0          ; 0    ; 0            ; |CPU|register_cpu:U_REGS ; register_cpu ; work         ;
+;    |ram:U_RAM|             ; 6580 (6580)         ; 16384 (16384)             ; 0                 ; 0          ; 0    ; 0            ; |CPU|ram:U_RAM           ; ram          ; work         ;
+;    |register_cpu:U_REGS|   ; 377 (377)           ; 416 (416)                 ; 0                 ; 0          ; 0    ; 0            ; |CPU|register_cpu:U_REGS ; register_cpu ; work         ;
 +----------------------------+---------------------+---------------------------+-------------------+------------+------+--------------+--------------------------+--------------+--------------+
 Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
 
 
-+----------------------------------------------------------------------------------+
-; Registers Removed During Synthesis                                               ;
-+-----------------------------------------+----------------------------------------+
-; Register name                           ; Reason for Removal                     ;
-+-----------------------------------------+----------------------------------------+
-; register_cpu:U_REGS|ATMP[0]             ; Lost fanout                            ;
-; register_cpu:U_REGS|IR[0..15]           ; Lost fanout                            ;
-; register_cpu:U_REGS|PC[0..31]           ; Lost fanout                            ;
-; register_cpu:U_REGS|SP[0..31]           ; Lost fanout                            ;
-; register_cpu:U_REGS|AD[0..31]           ; Lost fanout                            ;
-; register_cpu:U_REGS|ATMP[1..31]         ; Lost fanout                            ;
-; register_cpu:U_REGS|TMP[1..15]          ; Merged with register_cpu:U_REGS|TMP[0] ;
-; register_cpu:U_REGS|rC[1..15]           ; Merged with register_cpu:U_REGS|rC[0]  ;
-; register_cpu:U_REGS|rD[0..15]           ; Merged with register_cpu:U_REGS|rC[0]  ;
-; register_cpu:U_REGS|TMP[0]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rC[0]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[15]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[15]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[14]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[14]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[13]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[13]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[12]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[12]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[11]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[11]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[10]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[10]              ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[9]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[9]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[8]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[8]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[7]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[7]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[6]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[6]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[5]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[5]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[4]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[4]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[3]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[3]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[2]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[2]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[1]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[1]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rE[0]               ; Stuck at GND due to stuck port data_in ;
-; register_cpu:U_REGS|rF[0]               ; Stuck at GND due to stuck port data_in ;
-; Total Number of Removed Registers = 224 ;                                        ;
-+-----------------------------------------+----------------------------------------+
+Encoding Type:  One-Hot
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; State Machine - |CPU|control:U_CONTROL|state                                                                                                                                                                                                                               ;
++-------------------+------------+---------------+-----------------+-----------------+-------------------+------------------+------------------+------------------+-----------------+-----------------+----------------+----------------+--------------+----------+----------+
+; Name              ; state.halt ; state.int_ack ; state.brz_check ; state.jump_addr ; state.store_write ; state.store_prep ; state.store_addr ; state.load_write ; state.load_read ; state.load_addr ; state.exec_ldi ; state.exec_alu ; state.decode ; state.f1 ; state.f0 ;
++-------------------+------------+---------------+-----------------+-----------------+-------------------+------------------+------------------+------------------+-----------------+-----------------+----------------+----------------+--------------+----------+----------+
+; state.f0          ; 0          ; 0             ; 0               ; 0               ; 0                 ; 0                ; 0                ; 0                ; 0               ; 0               ; 0              ; 0              ; 0            ; 0        ; 0        ;
+; state.f1          ; 0          ; 0             ; 0               ; 0               ; 0                 ; 0                ; 0                ; 0                ; 0               ; 0               ; 0              ; 0              ; 0            ; 1        ; 1        ;
+; state.decode      ; 0          ; 0             ; 0               ; 0               ; 0                 ; 0                ; 0                ; 0                ; 0               ; 0               ; 0              ; 0              ; 1            ; 0        ; 1        ;
+; state.exec_alu    ; 0          ; 0             ; 0               ; 0               ; 0                 ; 0                ; 0                ; 0                ; 0               ; 0               ; 0              ; 1              ; 0            ; 0        ; 1        ;
+; state.exec_ldi    ; 0          ; 0             ; 0               ; 0               ; 0                 ; 0                ; 0                ; 0                ; 0               ; 0               ; 1              ; 0              ; 0            ; 0        ; 1        ;
+; state.load_addr   ; 0          ; 0             ; 0               ; 0               ; 0                 ; 0                ; 0                ; 0                ; 0               ; 1               ; 0              ; 0              ; 0            ; 0        ; 1        ;
+; state.load_read   ; 0          ; 0             ; 0               ; 0               ; 0                 ; 0                ; 0                ; 0                ; 1               ; 0               ; 0              ; 0              ; 0            ; 0        ; 1        ;
+; state.load_write  ; 0          ; 0             ; 0               ; 0               ; 0                 ; 0                ; 0                ; 1                ; 0               ; 0               ; 0              ; 0              ; 0            ; 0        ; 1        ;
+; state.store_addr  ; 0          ; 0             ; 0               ; 0               ; 0                 ; 0                ; 1                ; 0                ; 0               ; 0               ; 0              ; 0              ; 0            ; 0        ; 1        ;
+; state.store_prep  ; 0          ; 0             ; 0               ; 0               ; 0                 ; 1                ; 0                ; 0                ; 0               ; 0               ; 0              ; 0              ; 0            ; 0        ; 1        ;
+; state.store_write ; 0          ; 0             ; 0               ; 0               ; 1                 ; 0                ; 0                ; 0                ; 0               ; 0               ; 0              ; 0              ; 0            ; 0        ; 1        ;
+; state.jump_addr   ; 0          ; 0             ; 0               ; 1               ; 0                 ; 0                ; 0                ; 0                ; 0               ; 0               ; 0              ; 0              ; 0            ; 0        ; 1        ;
+; state.brz_check   ; 0          ; 0             ; 1               ; 0               ; 0                 ; 0                ; 0                ; 0                ; 0               ; 0               ; 0              ; 0              ; 0            ; 0        ; 1        ;
+; state.int_ack     ; 0          ; 1             ; 0               ; 0               ; 0                 ; 0                ; 0                ; 0                ; 0               ; 0               ; 0              ; 0              ; 0            ; 0        ; 1        ;
+; state.halt        ; 1          ; 0             ; 0               ; 0               ; 0                 ; 0                ; 0                ; 0                ; 0               ; 0               ; 0              ; 0              ; 0            ; 0        ; 1        ;
++-------------------+------------+---------------+-----------------+-----------------+-------------------+------------------+------------------+------------------+-----------------+-----------------+----------------+----------------+--------------+----------+----------+
 
 
-+---------------------------------------------------------------------------------------------------------------------------------------------+
-; Removed Registers Triggering Further Register Optimizations                                                                                 ;
-+----------------------------+---------------------------+------------------------------------------------------------------------------------+
-; Register name              ; Reason for Removal        ; Registers Removed due to This Register                                             ;
-+----------------------------+---------------------------+------------------------------------------------------------------------------------+
-; register_cpu:U_REGS|TMP[0] ; Stuck at GND              ; register_cpu:U_REGS|rE[15], register_cpu:U_REGS|rF[15], register_cpu:U_REGS|rE[5], ;
-;                            ; due to stuck port data_in ; register_cpu:U_REGS|rF[5], register_cpu:U_REGS|rE[4], register_cpu:U_REGS|rF[4],   ;
-;                            ;                           ; register_cpu:U_REGS|rE[3], register_cpu:U_REGS|rF[3], register_cpu:U_REGS|rE[2],   ;
-;                            ;                           ; register_cpu:U_REGS|rF[2], register_cpu:U_REGS|rE[1], register_cpu:U_REGS|rF[1],   ;
-;                            ;                           ; register_cpu:U_REGS|rE[0], register_cpu:U_REGS|rF[0]                               ;
-+----------------------------+---------------------------+------------------------------------------------------------------------------------+
++------------------------------------------------------------+
+; Logic Cells Representing Combinational Loops               ;
++--------------------------------------------------------+---+
+; Logic Cell Name                                        ;   ;
++--------------------------------------------------------+---+
+; control:U_CONTROL|Selector11~0                         ;   ;
+; Number of logic cells representing combinational loops ; 1 ;
++--------------------------------------------------------+---+
+Note: All cells listed above may not be present at the end of synthesis due to various synthesis optimizations.
+
+
++--------------------------------------------------------------------------------+
+; Registers Removed During Synthesis                                             ;
++---------------------------------------+----------------------------------------+
+; Register name                         ; Reason for Removal                     ;
++---------------------------------------+----------------------------------------+
+; control:U_CONTROL|state.int_ack       ; Stuck at GND due to stuck port data_in ;
+; Total Number of Removed Registers = 1 ;                                        ;
++---------------------------------------+----------------------------------------+
 
 
 +------------------------------------------------------+
@@ -303,36 +292,46 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 32    ;
+; Total registers                              ; 16846 ;
 ; Number of registers using Synchronous Clear  ; 0     ;
-; Number of registers using Synchronous Load   ; 0     ;
-; Number of registers using Asynchronous Clear ; 32    ;
+; Number of registers using Synchronous Load   ; 32    ;
+; Number of registers using Asynchronous Clear ; 430   ;
 ; Number of registers using Asynchronous Load  ; 0     ;
-; Number of registers using Clock Enable       ; 32    ;
+; Number of registers using Clock Enable       ; 16832 ;
 ; Number of registers using Preset             ; 0     ;
 +----------------------------------------------+-------+
 
 
-+-----------------------------------------------------------------------------------------------------------------------------------------------+
-; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+---------------------------------+
-; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output      ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+---------------------------------+
-; 8:1                ; 12 bits   ; 60 LEs        ; 24 LEs               ; 36 LEs                 ; No         ; |CPU|register_cpu:U_REGS|Mux358 ;
-; 8:1                ; 4 bits    ; 20 LEs        ; 12 LEs               ; 8 LEs                  ; No         ; |CPU|register_cpu:U_REGS|Mux365 ;
-; 8:1                ; 12 bits   ; 60 LEs        ; 24 LEs               ; 36 LEs                 ; No         ; |CPU|register_cpu:U_REGS|Mux372 ;
-; 8:1                ; 4 bits    ; 20 LEs        ; 12 LEs               ; 8 LEs                  ; No         ; |CPU|register_cpu:U_REGS|Mux382 ;
-; 16:1               ; 14 bits   ; 140 LEs       ; 126 LEs              ; 14 LEs                 ; No         ; |CPU|alu:U_ALU|Mux13            ;
-+--------------------+-----------+---------------+----------------------+------------------------+------------+---------------------------------+
-
-
-+----------------------------------------------------------------------------------------------------------------+
-; Port Connectivity Checks: "ram:U_RAM"                                                                          ;
-+------+--------+----------+-------------------------------------------------------------------------------------+
-; Port ; Type   ; Severity ; Details                                                                             ;
-+------+--------+----------+-------------------------------------------------------------------------------------+
-; q    ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
-+------+--------+----------+-------------------------------------------------------------------------------------+
++--------------------------------------------------------------------------------------------------------------------------------------------------+
+; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                   ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+------------------------------------+
+; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output         ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+------------------------------------+
+; 3:1                ; 16 bits   ; 32 LEs        ; 0 LEs                ; 32 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|PC[29]    ;
+; 3:1                ; 16 bits   ; 32 LEs        ; 0 LEs                ; 32 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|PC[12]    ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[14][7]  ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[6][10]  ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[8][7]   ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[0][3]   ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[15][3]  ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[7][13]  ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[9][2]   ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[1][5]   ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[10][0]  ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[2][1]   ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[12][14] ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[4][15]  ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[11][15] ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[3][14]  ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[13][2]  ;
+; 7:1                ; 16 bits   ; 64 LEs        ; 0 LEs                ; 64 LEs                 ; Yes        ; |CPU|register_cpu:U_REGS|R[5][4]   ;
+; 4:1                ; 16 bits   ; 32 LEs        ; 32 LEs               ; 0 LEs                  ; No         ; |CPU|Mux3                          ;
+; 28:1               ; 8 bits    ; 144 LEs       ; 144 LEs              ; 0 LEs                  ; No         ; |CPU|register_cpu:U_REGS|Mux528    ;
+; 28:1               ; 8 bits    ; 144 LEs       ; 144 LEs              ; 0 LEs                  ; No         ; |CPU|register_cpu:U_REGS|Mux538    ;
+; 28:1               ; 8 bits    ; 144 LEs       ; 144 LEs              ; 0 LEs                  ; No         ; |CPU|register_cpu:U_REGS|Mux565    ;
+; 28:1               ; 8 bits    ; 144 LEs       ; 144 LEs              ; 0 LEs                  ; No         ; |CPU|register_cpu:U_REGS|Mux569    ;
+; 26:1               ; 14 bits   ; 238 LEs       ; 168 LEs              ; 70 LEs                 ; No         ; |CPU|alu:U_ALU|Mux11               ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+------------------------------------+
 
 
 +----------------------------------------------------------------------------------------------------------------+
@@ -340,13 +339,7 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +------+--------+----------+-------------------------------------------------------------------------------------+
 ; Port ; Type   ; Severity ; Details                                                                             ;
 +------+--------+----------+-------------------------------------------------------------------------------------+
-; smar ; Input  ; Info     ; Stuck at GND                                                                        ;
-; smbr ; Input  ; Info     ; Stuck at GND                                                                        ;
-; wrin ; Input  ; Info     ; Stuck at GND                                                                        ;
-; rdin ; Input  ; Info     ; Stuck at GND                                                                        ;
 ; ad   ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
-; di   ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
-; rd   ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
 +------+--------+----------+-------------------------------------------------------------------------------------+
 
 
@@ -360,19 +353,24 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +------+-------+----------+--------------+
 
 
-+---------------------------------------------------------------------------------------------------------------------+
-; Port Connectivity Checks: "register_cpu:U_REGS"                                                                     ;
-+-----------+--------+----------+-------------------------------------------------------------------------------------+
-; Port      ; Type   ; Severity ; Details                                                                             ;
-+-----------+--------+----------+-------------------------------------------------------------------------------------+
-; di[15..4] ; Input  ; Info     ; Stuck at GND                                                                        ;
-; sbb[3]    ; Input  ; Info     ; Stuck at GND                                                                        ;
-; sbc[3]    ; Input  ; Info     ; Stuck at GND                                                                        ;
-; sba[1]    ; Input  ; Info     ; Stuck at VCC                                                                        ;
-; sid       ; Input  ; Info     ; Stuck at GND                                                                        ;
-; sa        ; Input  ; Info     ; Stuck at GND                                                                        ;
-; irout     ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
-+-----------+--------+----------+-------------------------------------------------------------------------------------+
++-------------------------------------------------+
+; Port Connectivity Checks: "register_cpu:U_REGS" ;
++-----------+-------+----------+------------------+
+; Port      ; Type  ; Severity ; Details          ;
++-----------+-------+----------+------------------+
+; di[15..8] ; Input ; Info     ; Stuck at GND     ;
++-----------+-------+----------+------------------+
+
+
++----------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "control:U_CONTROL"                                                                  ;
++------+--------+----------+-------------------------------------------------------------------------------------+
+; Port ; Type   ; Severity ; Details                                                                             ;
++------+--------+----------+-------------------------------------------------------------------------------------+
+; int  ; Input  ; Info     ; Stuck at GND                                                                        ;
+; ldf  ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; inta ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
++------+--------+----------+-------------------------------------------------------------------------------------+
 
 
 +-----------------------------------------------------+
@@ -380,28 +378,29 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +-----------------------+-----------------------------+
 ; Type                  ; Count                       ;
 +-----------------------+-----------------------------+
-; arriav_ff             ; 32                          ;
-;     ENA CLR           ; 32                          ;
-; arriav_lcell_comb     ; 305                         ;
-;     arith             ; 68                          ;
-;         0 data inputs ; 4                           ;
-;         1 data inputs ; 8                           ;
-;         2 data inputs ; 8                           ;
-;         4 data inputs ; 24                          ;
-;         5 data inputs ; 24                          ;
-;     extend            ; 20                          ;
-;         7 data inputs ; 20                          ;
-;     normal            ; 217                         ;
-;         1 data inputs ; 10                          ;
-;         2 data inputs ; 9                           ;
-;         3 data inputs ; 17                          ;
-;         4 data inputs ; 88                          ;
+; arriav_ff             ; 16846                       ;
+;     CLR               ; 14                          ;
+;     ENA               ; 16416                       ;
+;     ENA CLR           ; 384                         ;
+;     ENA CLR SLD       ; 32                          ;
+; arriav_lcell_comb     ; 7387                        ;
+;     arith             ; 150                         ;
+;         0 data inputs ; 6                           ;
+;         1 data inputs ; 112                         ;
+;         2 data inputs ; 32                          ;
+;     extend            ; 1                           ;
+;         7 data inputs ; 1                           ;
+;     normal            ; 7236                        ;
+;         1 data inputs ; 37                          ;
+;         2 data inputs ; 26                          ;
+;         3 data inputs ; 1096                        ;
+;         4 data inputs ; 102                         ;
 ;         5 data inputs ; 60                          ;
-;         6 data inputs ; 33                          ;
+;         6 data inputs ; 5915                        ;
 ; boundary_port         ; 64                          ;
 ;                       ;                             ;
-; Max LUT depth         ; 9.50                        ;
-; Average LUT depth     ; 8.36                        ;
+; Max LUT depth         ; 15.10                       ;
+; Average LUT depth     ; 7.10                        ;
 +-----------------------+-----------------------------+
 
 
@@ -410,7 +409,7 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:00     ;
+; Top            ; 00:00:19     ;
 +----------------+--------------+
 
 
@@ -420,7 +419,7 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 24.1std.0 Build 1077 03/04/2025 SC Lite Edition
-    Info: Processing started: Sun May 31 00:34:13 2026
+    Info: Processing started: Sun Jun  7 01:08:41 2026
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off CPU -c CPU
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 6 of the 6 processors detected
@@ -428,8 +427,8 @@ Info (12021): Found 2 design units, including 1 entities, in source file hex_dis
     Info (12022): Found design unit 1: hex_display-rtl File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/hex_display.vhd Line: 30
     Info (12023): Found entity 1: hex_display File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/hex_display.vhd Line: 23
 Info (12021): Found 2 design units, including 1 entities, in source file alu.vhd
-    Info (12022): Found design unit 1: alu-Behavioral File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/alu.vhd Line: 58
-    Info (12023): Found entity 1: alu File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/alu.vhd Line: 42
+    Info (12022): Found design unit 1: alu-Behavioral File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/alu.vhd Line: 26
+    Info (12023): Found entity 1: alu File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/alu.vhd Line: 10
 Info (12021): Found 2 design units, including 1 entities, in source file busint.vhd
     Info (12022): Found design unit 1: busint-rtl File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/busint.vhd Line: 54
     Info (12023): Found entity 1: busint File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/busint.vhd Line: 36
@@ -437,40 +436,70 @@ Info (12021): Found 2 design units, including 1 entities, in source file ram.vhd
     Info (12022): Found design unit 1: ram-rtl File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 43
     Info (12023): Found entity 1: ram File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 33
 Info (12021): Found 2 design units, including 1 entities, in source file register_cpu.vhd
-    Info (12022): Found design unit 1: register_cpu-rtl File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/register_cpu.vhd Line: 66
-    Info (12023): Found entity 1: register_cpu File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/register_cpu.vhd Line: 48
+    Info (12022): Found design unit 1: register_cpu-rtl File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/register_cpu.vhd Line: 32
+    Info (12023): Found entity 1: register_cpu File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/register_cpu.vhd Line: 11
 Info (12021): Found 2 design units, including 1 entities, in source file cpu.vhd
-    Info (12022): Found design unit 1: CPU-rtl File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 68
-    Info (12023): Found entity 1: CPU File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 54
+    Info (12022): Found design unit 1: CPU-rtl File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 54
+    Info (12023): Found entity 1: CPU File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 40
 Info (12021): Found 2 design units, including 1 entities, in source file cpu_tb.vhd
-    Info (12022): Found design unit 1: cpu_tb-behavior File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/cpu_tb.vhd Line: 23
-    Info (12023): Found entity 1: cpu_tb File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/cpu_tb.vhd Line: 20
+    Info (12022): Found design unit 1: cpu_tb-behavior File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/cpu_tb.vhd Line: 16
+    Info (12023): Found entity 1: cpu_tb File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/cpu_tb.vhd Line: 13
 Info (12021): Found 2 design units, including 1 entities, in source file alu_tb.vhd
-    Info (12022): Found design unit 1: alu_tb-behavior File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/alu_tb.vhd Line: 23
-    Info (12023): Found entity 1: alu_tb File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/alu_tb.vhd Line: 20
+    Info (12022): Found design unit 1: alu_tb-behavior File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/alu_tb.vhd Line: 8
+    Info (12023): Found entity 1: alu_tb File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/alu_tb.vhd Line: 5
+Info (12021): Found 2 design units, including 1 entities, in source file register_cpu_tb.vhd
+    Info (12022): Found design unit 1: register_cpu_tb-behavior File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/register_cpu_tb.vhd Line: 8
+    Info (12023): Found entity 1: register_cpu_tb File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/register_cpu_tb.vhd Line: 5
+Info (12021): Found 2 design units, including 1 entities, in source file control.vhd
+    Info (12022): Found design unit 1: control-rtl File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/control.vhd Line: 33
+    Info (12023): Found entity 1: control File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/control.vhd Line: 7
 Info (12127): Elaborating entity "CPU" for the top level hierarchy
-Warning (10036): Verilog HDL or VHDL warning at CPU.vhd(160): object "reg_IR" assigned a value but never read File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 160
-Warning (10036): Verilog HDL or VHDL warning at CPU.vhd(179): object "bus_AD" assigned a value but never read File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 179
-Warning (10036): Verilog HDL or VHDL warning at CPU.vhd(181): object "bus_DI" assigned a value but never read File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 181
-Warning (10036): Verilog HDL or VHDL warning at CPU.vhd(183): object "bus_RD" assigned a value but never read File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 183
-Warning (10036): Verilog HDL or VHDL warning at CPU.vhd(185): object "ram_data_out" assigned a value but never read File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 185
-Info (12128): Elaborating entity "register_cpu" for hierarchy "register_cpu:U_REGS" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 270
-Info (12128): Elaborating entity "alu" for hierarchy "alu:U_ALU" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 287
-Info (12128): Elaborating entity "busint" for hierarchy "busint:U_BUSINT" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 302
-Info (12128): Elaborating entity "ram" for hierarchy "ram:U_RAM" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 319
-Info (12128): Elaborating entity "hex_display" for hierarchy "hex_display:U_HEX0" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 354
+Warning (10036): Verilog HDL or VHDL warning at CPU.vhd(200): object "bus_AD" assigned a value but never read File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 200
+Info (12128): Elaborating entity "control" for hierarchy "control:U_CONTROL" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 263
+Info (12128): Elaborating entity "register_cpu" for hierarchy "register_cpu:U_REGS" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 288
+Info (12128): Elaborating entity "alu" for hierarchy "alu:U_ALU" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 308
+Info (12128): Elaborating entity "busint" for hierarchy "busint:U_BUSINT" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 323
+Info (12128): Elaborating entity "ram" for hierarchy "ram:U_RAM" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 340
+Info (12128): Elaborating entity "hex_display" for hierarchy "hex_display:U_HEX0" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 365
+Info (276014): Found 1 instances of uninferred RAM logic
+    Info (276007): RAM logic "ram:U_RAM|ram_block" is uninferred due to asynchronous read logic File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+Warning (13046): Tri-state node(s) do not directly drive top-level pin(s)
+    Warning (13048): Converted tri-state node "bus_D[15]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[14]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[13]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[12]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[11]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[10]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[9]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[8]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[7]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[6]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[5]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[4]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[3]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[2]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[1]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
+    Warning (13048): Converted tri-state node "bus_D[0]" into a selector File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd Line: 48
 Info (286030): Timing-Driven Synthesis is running
-Info (17049): 144 registers lost all their fanouts during netlist optimizations.
 Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
     Info (16011): Adding 0 node(s), including 0 DDIO, 0 PLL, 0 transceiver and 0 LCELL
-Info (21057): Implemented 391 device resources after synthesis - the final resource count might be different
+Warning (21074): Design contains 8 input pin(s) that do not drive logic
+    Warning (15610): No output dependent on input pin "SW[2]" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 42
+    Warning (15610): No output dependent on input pin "SW[3]" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 42
+    Warning (15610): No output dependent on input pin "SW[4]" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 42
+    Warning (15610): No output dependent on input pin "SW[5]" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 42
+    Warning (15610): No output dependent on input pin "SW[6]" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 42
+    Warning (15610): No output dependent on input pin "SW[7]" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 42
+    Warning (15610): No output dependent on input pin "SW[8]" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 42
+    Warning (15610): No output dependent on input pin "SW[9]" File: C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd Line: 42
+Info (21057): Implemented 24220 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 12 input pins
     Info (21059): Implemented 52 output pins
-    Info (21061): Implemented 327 logic cells
-Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 6 warnings
-    Info: Peak virtual memory: 4958 megabytes
-    Info: Processing ended: Sun May 31 00:34:21 2026
-    Info: Elapsed time: 00:00:08
-    Info: Total CPU time (on all processors): 00:00:16
+    Info (21061): Implemented 24156 logic cells
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 28 warnings
+    Info: Peak virtual memory: 5076 megabytes
+    Info: Processing ended: Sun Jun  7 01:09:11 2026
+    Info: Elapsed time: 00:00:30
+    Info: Total CPU time (on all processors): 00:00:36
 
 

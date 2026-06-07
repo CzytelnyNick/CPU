@@ -1,0 +1,78 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+-- =============================================================
+-- LAB 3: Uklad wspolpracy z pamiecia (busint)
+--
+-- MAR, MBR, szyna dwukierunkowa, segmentacja adresu.
+--
+-- Segmentacja (rejestry segmentowe z pliku rejestrow):
+--   - numer segmentu z rejestru SEG (2 bity uzywane)
+--   - 8 bitow przesuniecia (offset w ADR(7 downto 0))
+--   - Adres fizyczny 16-bit = (segment << 8) + offset
+--   - Segmenty moga sie nakladac (ten sam numer segmentu w roznych rejestrach)
+--
+-- =============================================================
+
+entity busint is
+    port (
+        clk           : in    std_logic;
+        ADR           : in    signed(31 downto 0);
+        SEG           : in    signed(15 downto 0);
+        DO            : in    signed(15 downto 0);
+        Smar          : in    std_logic;
+        Smbr          : in    std_logic;
+        WRin          : in    std_logic;
+        RDin          : in    std_logic;
+        AD            : out   signed(31 downto 0);
+        D             : inout signed(15 downto 0);
+        DI            : out   signed(15 downto 0);
+        WR            : out   std_logic;
+        RD            : out   std_logic;
+        phys_addr_out : out   std_logic_vector(15 downto 0)
+    );
+end entity busint;
+
+architecture rtl of busint is
+
+    signal phys_addr10 : unsigned(9 downto 0) := (others => '0');
+
+begin
+
+    -- Adres fizyczny = numer_segmentu << 8 + offset
+    phys_addr10 <= unsigned(SEG(1 downto 0)) & unsigned(ADR(7 downto 0));
+    phys_addr_out <= std_logic_vector(resize(phys_addr10, 16));
+
+    process(clk, Smar, phys_addr10, Smbr, DO, D, WRin, RDin)
+        variable MBRin  : signed(15 downto 0) := (others => '0');
+        variable MBRout : signed(15 downto 0) := (others => '0');
+        variable MAR    : signed(31 downto 0) := (others => '0');
+    begin
+
+        if (clk'event and clk = '1') then
+            if Smar = '1' then
+                MAR := signed(resize(phys_addr10, 32));
+            end if;
+            if Smbr = '1' then
+                MBRout := DO;
+            end if;
+            if RDin = '1' then
+                MBRin := D;
+            end if;
+        end if;
+
+        if WRin = '1' then
+            D <= MBRout;
+        else
+            D <= (others => 'Z');
+        end if;
+
+        DI <= MBRin;
+        AD <= MAR;
+        WR <= WRin;
+        RD <= RDin;
+
+    end process;
+
+end architecture rtl;

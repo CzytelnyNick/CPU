@@ -10,6 +10,7 @@ vcom -93 -work work {C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/alu.vhd}
 vcom -93 -work work {C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/busint.vhd}
 vcom -93 -work work {C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/ram.vhd}
 vcom -93 -work work {C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/register_cpu.vhd}
+vcom -93 -work work {C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/control.vhd}
 vcom -93 -work work {C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/CPU.vhd}
 
 vcom -93 -work work {C:/Users/odrow/OneDrive/Dokumenty/quartus/CPU/cpu_tb.vhd}

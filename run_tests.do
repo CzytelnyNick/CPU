@@ -29,10 +29,12 @@ vcom -93 -work work alu.vhd
 vcom -93 -work work busint.vhd
 vcom -93 -work work ram.vhd
 vcom -93 -work work register_cpu.vhd
+vcom -93 -work work control.vhd
 vcom -93 -work work CPU.vhd
 
 # Kompilacja testbenchy
 vcom -93 -work work alu_tb.vhd
+vcom -93 -work work register_cpu_tb.vhd
 vcom -93 -work work cpu_tb.vhd
 
 # ---------------- TEST 1: ALU ----------------
@@ -43,7 +45,15 @@ vsim -voptargs="+acc" work.alu_tb
 add wave -r /*
 run -all
 
-# ---------------- TEST 2: CPU (end-to-end) ----------------
+# ---------------- TEST 2: REJESTRY ----------------
+echo "========================================="
+echo " URUCHAMIAM register_cpu_tb"
+echo "========================================="
+vsim -voptargs="+acc" work.register_cpu_tb
+add wave -r /*
+run -all
+
+# ---------------- TEST 3: CPU (end-to-end) ----------------
 echo "========================================="
 echo " URUCHAMIAM cpu_tb"
 echo "========================================="

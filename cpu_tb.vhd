@@ -1,20 +1,13 @@
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 -- =============================================================
--- TESTBENCH POZIOMU SYSTEMU (end-to-end) dla CPU
+-- TESTBENCH procesora (end-to-end)
 --
--- Steruje wylacznie portami zewnetrznymi (SW, KEY) i sprawdza
--- wyjscia HEX/LEDR - dokladnie tak jak na plytce.
---
--- WAZNE: nie da sie wpisac liczby bezposrednio przez SW, bo
--- SW[3:0] pelni JEDNOCZESNIE role kodu operacji ALU i wartosci DI.
--- Dlatego (zgodnie z README.md) liczby budujemy metoda CLR + INC.
---
--- Scenariusz: rA = 7, rB = 2, podglad ADD => HEX = 0009.
--- Testbench jest samosprawdzajacy (assert) i na koncu wypisuje
--- podsumowanie liczby bledow.
+-- Program w ram_init.mif:
+--   LDI rA, 7  ->  LDI rB, 2  ->  ADD rA,rA,rB  ->  HLT
+-- Oczekiwany wynik: rA = 9, stan HLT (LEDR[9:6] = 1111)
 -- =============================================================
 
 entity cpu_tb is
@@ -36,16 +29,13 @@ architecture behavior of cpu_tb is
         );
     end component;
 
-    -- Sygnaly testowe
     signal SW   : std_logic_vector(9 downto 0) := (others => '0');
-    signal KEY  : std_logic_vector(1 downto 0) := (others => '1'); -- aktywne niskim
+    signal KEY  : std_logic_vector(1 downto 0) := (others => '1');
     signal LEDR : std_logic_vector(9 downto 0);
     signal HEX0, HEX1, HEX2, HEX3, HEX4, HEX5 : std_logic_vector(6 downto 0);
 
-    -- Kody wyswietlacza 7-seg (aktywne niskim) - zgodne z hex_display.vhd
+    -- wyswietlacz 7-seg (aktywny niski) - zgodne z hex_display.vhd
     constant SEG0 : std_logic_vector(6 downto 0) := "1000000";
-    constant SEG2 : std_logic_vector(6 downto 0) := "0100100";
-    constant SEG7 : std_logic_vector(6 downto 0) := "1111000";
     constant SEG9 : std_logic_vector(6 downto 0) := "0010000";
 
 begin
@@ -66,7 +56,6 @@ begin
     process
         variable errcnt : integer := 0;
 
-        -- jeden impuls zegara: KEY0 1->0->1 (clk = not KEY0, zbocze rosnace gdy KEY0=0)
         procedure tick is
         begin
             KEY(0) <= '0';
@@ -75,9 +64,9 @@ begin
             wait for 10 ns;
         end procedure;
 
-        procedure chk_hex(signal got : in std_logic_vector(6 downto 0);
-                          exp        : in std_logic_vector(6 downto 0);
-                          name       : in string) is
+        procedure chk_hex(signal got : std_logic_vector(6 downto 0);
+                          exp        : std_logic_vector(6 downto 0);
+                          name       : string) is
         begin
             if got /= exp then
                 report "FAIL: " & name severity error;
@@ -87,9 +76,9 @@ begin
             end if;
         end procedure;
 
-        procedure chk_bit(signal got : in std_logic;
-                          exp        : in std_logic;
-                          name       : in string) is
+        procedure chk_vec(signal got : std_logic_vector;
+                          exp        : std_logic_vector;
+                          name       : string) is
         begin
             if got /= exp then
                 report "FAIL: " & name severity error;
@@ -100,79 +89,35 @@ begin
         end procedure;
     begin
         ----------------------------------------------------------------
-        -- RESET
+        -- RESET (SW[1:0]=00 -> wyswietl rA)
         ----------------------------------------------------------------
-        KEY(1) <= '0';  -- reset aktywny
+        SW <= "0000000000";
+        KEY(1) <= '0';
         wait for 20 ns;
-        KEY(1) <= '1';  -- zwolnienie resetu
+        KEY(1) <= '1';
         wait for 20 ns;
 
         ----------------------------------------------------------------
-        -- rA = 7  (CLR, potem INC x7)
+        -- Wykonaj program (4 instr. x ~4 cykle stanow + zapas)
         ----------------------------------------------------------------
-        SW <= "0100001010";  -- DST=rA, WEN=1, Sbb=rA, ALU=1010 (CLR)
-        wait for 10 ns;
-        tick;                -- rA <- 0
-
-        SW <= "0100001101";  -- DST=rA, WEN=1, Sbb=rA, ALU=1101 (INC)
-        wait for 10 ns;
-        for i in 1 to 7 loop
-            tick;            -- rA <- rA + 1
+        for i in 1 to 40 loop
+            tick;
         end loop;
 
-        -- Podglad rA (PASS BB, Sbb=rA, WEN=0): HEX0 powinno = 7
-        SW <= "0000000000";
-        wait for 20 ns;
-        chk_hex(HEX0, SEG7, "rA = 7 (HEX0)");
-        chk_hex(HEX1, SEG0, "rA high nibble = 0 (HEX1)");
+        wait for 30 ns;
 
         ----------------------------------------------------------------
-        -- rB = 2  (CLR, potem INC x2)
+        -- Weryfikacja przez porty wyjsciowe
+        -- SW=00: HEX3..0 = rA = 9 => 0009
         ----------------------------------------------------------------
-        SW <= "1100001010";  -- DST=rB, WEN=1, Sbb=rA, ALU=1010 (CLR)
-        wait for 10 ns;
-        tick;                -- rB <- 0
+        chk_hex(HEX0, SEG9, "rA = 9 (HEX0)");
+        chk_hex(HEX1, SEG0, "rA = 0009 (HEX1)");
+        chk_hex(HEX2, SEG0, "rA = 0009 (HEX2)");
+        chk_hex(HEX3, SEG0, "rA = 0009 (HEX3)");
 
-        SW <= "1100011101";  -- DST=rB, WEN=1, Sbb=rB, ALU=1101 (INC)
-        wait for 10 ns;
-        tick;
-        tick;                -- rB <- 2
+        -- LEDR[9:6] = state_dbg; HLT = 1111
+        chk_vec(LEDR(9 downto 6), "1111", "stan HLT (state_dbg)");
 
-        -- Podglad rB (PASS BB, Sbb=rB, WEN=0): HEX0 powinno = 2
-        SW <= "0000010000";
-        wait for 20 ns;
-        chk_hex(HEX0, SEG2, "rB = 2 (HEX0)");
-
-        ----------------------------------------------------------------
-        -- Podglad ADD: rA + rB = 7 + 2 = 9 (bez zapisu)
-        ----------------------------------------------------------------
-        SW <= "0001000010";  -- WEN=0, Sbc=rB, Sbb=rA, ALU=0010 (ADD)
-        wait for 50 ns;
-
-        chk_hex(HEX0, SEG9, "ADD wynik low nibble = 9 (HEX0)");
-        chk_hex(HEX1, SEG0, "ADD wynik = 0009 (HEX1)");
-        chk_hex(HEX2, SEG0, "ADD wynik = 0009 (HEX2)");
-        chk_hex(HEX3, SEG0, "ADD wynik = 0009 (HEX3)");
-
-        -- flagi: LEDR(0)=P, LEDR(1)=S, LEDR(2)=Z, LEDR(3)=C
-        chk_bit(LEDR(0), '1', "ADD flaga P = 1");
-        chk_bit(LEDR(1), '0', "ADD flaga S = 0");
-        chk_bit(LEDR(2), '0', "ADD flaga Z = 0");
-        chk_bit(LEDR(3), '0', "ADD flaga C = 0");
-
-        ----------------------------------------------------------------
-        -- Zapis wyniku ADD do rA, a potem podglad => rA = 9
-        ----------------------------------------------------------------
-        SW <= "0101000010";  -- WEN=1, DST=rA, Sbc=rB, Sbb=rA, ALU=ADD
-        wait for 10 ns;
-        tick;                -- rA <- 9
-
-        SW <= "0000000000";  -- podglad rA (PASS BB)
-        wait for 20 ns;
-        chk_hex(HEX0, SEG9, "rA po zapisie = 9 (HEX0)");
-
-        ----------------------------------------------------------------
-        -- PODSUMOWANIE
         ----------------------------------------------------------------
         if errcnt = 0 then
             report "=== CPU_TB: WSZYSTKIE TESTY PRZESZLY ===" severity note;
@@ -183,4 +128,4 @@ begin
         wait;
     end process;
 
-end architecture;
+end architecture behavior;
